@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "392772167573",
+    "firebase_url": "https://geovideoapp-85693.firebaseio.com",
+    "project_id": "geovideoapp-85693",
+    "storage_bucket": "geovideoapp-85693.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392772167573:android:d39d68c1606eaf4c",
+        "android_client_info": {
+          "package_name": "com.example.bhati.routeapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "392772167573-14j4ucvs9c2kfoghh7vdknudf9sf5fd6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bhati.routeapplication",
+            "certificate_hash": "fd4a190b0cfb4db783d8ebef3bee820d89e5db96"
+          }
+        },
+        {
+          "client_id": "392772167573-rh2a312t4n702fb9fkn91dnhhhp30n5e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdYZ54cQ0Ak5pWs1qz16bPiNZ_o5Lwx-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392772167573-rh2a312t4n702fb9fkn91dnhhhp30n5e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
