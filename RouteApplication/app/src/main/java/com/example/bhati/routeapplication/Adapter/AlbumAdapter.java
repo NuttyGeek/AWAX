@@ -58,10 +58,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.MyViewHolder
         holder.txtDuration.setText(""+getVideoTime(album.getVideo_url()));
         holder.txtTime.setText(album.getTime());
         holder.txtDate.setText(album.getDate());
-
-
-
-
         holder.txtSize.setText(album.getSize());
         holder.txtName.setText(album.getName());
 
@@ -147,20 +143,20 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.MyViewHolder
     @SuppressLint("DefaultLocale")
     private String getVideoTime(String videoUri)
     {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(mContext, Uri.parse(videoUri));
-        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        long timeInMillisec = Long.parseLong(time );
-        Log.d("Adapter", "getVideoTime: "+timeInMillisec);
-        retriever.release();
-       // SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-       // mTimeText.setText("Time: " + dateFormat.format(timeInMillisec));
-        //timeInMillisec = 5000;
-        String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(timeInMillisec),
-                TimeUnit.MILLISECONDS.toMinutes(timeInMillisec) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeInMillisec)),
-                TimeUnit.MILLISECONDS.toSeconds(timeInMillisec) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeInMillisec)));
+//        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+//        retriever.setDataSource(mContext, Uri.parse(videoUri));
+//        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+//        long timeInMillisec = Long.parseLong(time );
+//        Log.d("Adapter", "getVideoTime: "+timeInMillisec);
+//        retriever.release();
+//       // SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+//       // mTimeText.setText("Time: " + dateFormat.format(timeInMillisec));
+//        //timeInMillisec = 5000;
+//        String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(timeInMillisec),
+//                TimeUnit.MILLISECONDS.toMinutes(timeInMillisec) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeInMillisec)),
+//                TimeUnit.MILLISECONDS.toSeconds(timeInMillisec) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeInMillisec)));
 
-        return hms;
+        return "some value";
     }
 
     static Bitmap bitmap;

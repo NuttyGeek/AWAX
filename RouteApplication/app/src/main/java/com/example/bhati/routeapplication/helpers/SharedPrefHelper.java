@@ -9,6 +9,8 @@ import com.example.bhati.routeapplication.Pojo.ImageLabel;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import jxl.Image;
 
@@ -92,8 +94,15 @@ public class SharedPrefHelper {
      * @param result ImageDetecttionResult object
      */
     public void saveObjectDetectionData(String videoName, ImageDetectionResult result){
+        // here we have to add correct labels beofre saving it to local storage
+//        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
+//        for(Map.Entry<String, ArrayList<ImageLabel>> entry: map.entrySet()){
+//            entry.
+//        }
+
         Gson gson = new Gson();
         String jsonString = gson.toJson(result);
+        Log.v("nuttygeeek_json", "Saving Json response in db: "+result.getFrameDataMap().toString());
         SharedPreferences videoPref = context.getSharedPreferences(sharedPrefFileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = videoPref.edit();
         editor.putString(videoName, jsonString);

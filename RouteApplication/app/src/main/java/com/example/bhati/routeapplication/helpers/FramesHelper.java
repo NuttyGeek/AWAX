@@ -14,24 +14,29 @@ import com.example.bhati.routeapplication.Interface.OnFrameExtracted;
 import com.example.bhati.routeapplication.Pojo.FramesResult;
 import com.example.bhati.routeapplication.Pojo.ImageDetectionResult;
 import com.example.bhati.routeapplication.Pojo.ImageLabel;
+import com.example.bhati.routeapplication.Pojo.UniqueLabelData;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel;
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,7 +99,7 @@ public class FramesHelper {
      */
     public void getFrameFromVideo(int time){
         // getting image from video at particular image
-        Bitmap image = metadataRetriever.getFrameAtTime(time, MediaMetadataRetriever.OPTION_CLOSEST);
+        Bitmap image = metadataRetriever.getFrameAtTime(time*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
 //         First Image is corrupted and is not is JPEG format , so we will have neglect that first image and take in consideration
 //         other images
         String dirPath = "/RouteApp/"+getVideoFileNameFromUriWithoutExtensions(this.videoPath);
@@ -109,7 +114,7 @@ public class FramesHelper {
      * @param dirPath absolute path to save it on
      * @param fileName name of the file to create
      */
-    public void saveBitmapToStorage(Bitmap image,String dirPath, String fileName){
+    public void saveBitmapToStorage(Bitmap image, String dirPath, String fileName){
         // root path of external storage
         String root = Environment.getExternalStorageDirectory().toString();
         // creating file
@@ -125,7 +130,8 @@ public class FramesHelper {
                 //file.delete();
             }
             FileOutputStream out = new FileOutputStream(file);
-            image.compress(Bitmap.CompressFormat.JPEG, 60, out);
+            image.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
             out.flush();
             out.close();
             Log.v("nuttygeek_file", "File Created: "+fileName);
@@ -150,6 +156,10 @@ public class FramesHelper {
         return fileUri.split("/RouteApp/")[1].replace(".mp4", "");
     }
 
+    /**
+     * this fxn returns the length of video in milliseconds
+     * @return
+     */
     public String getLengthOfVideo(){
         String length = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
         return length;
@@ -166,7 +176,7 @@ public class FramesHelper {
             timestamps.add(i);
             i=i+REGULAR_FRAME_INTERVAL;
         }
-
+        Log.v("nuttygeek_timestamps", timestamps.toString());
     }
 
     /**
@@ -430,5 +440,165 @@ public class FramesHelper {
         }
         return points;
     }
+
+
+    /**
+     * This fxn create sa list og image lable object from the overall result
+     * @param result Image detecttion resul object
+     */
+    public HashMap<String, UniqueLabelData> getChartData(ImageDetectionResult result){
+        ArrayList<ImageLabel> allLabels = new ArrayList<>();
+        HashMap<String, ArrayList<ImageLabel>> dataMap = result.getFrameDataMap();
+        for(HashMap.Entry<String, ArrayList<ImageLabel>> entry : dataMap.entrySet()){
+            Log.v("nuttygeek_hash", "entry: "+entry.toString());
+            ArrayList<ImageLabel> labelsInAFrame = entry.getValue();
+            // iterating over the image label objects in an list
+            for(int i=0; i<labelsInAFrame.size(); i++){
+                allLabels.add(labelsInAFrame.get(i));
+            }
+        }
+        // got all the labels now, find out unique label names from this all labels list
+        ArrayList<String> uniqueLabelNames = new ArrayList<>();
+        ArrayList<String> listOfLabelNames = new ArrayList<>();
+        // get labels names from ImageLabel Object
+        for(ImageLabel label: allLabels){
+            listOfLabelNames.add(label.getName());
+        }
+        // getting unique label names
+        Set setOfLabelNames = new HashSet(listOfLabelNames);
+        uniqueLabelNames = new ArrayList<>(setOfLabelNames);
+        // now create a list of hashmap <String, UniqueLabelData>
+        HashMap<String, UniqueLabelData> averageMap = new HashMap<>();
+        // create map for label and its corresponding label list
+        for(String label: uniqueLabelNames){
+            UniqueLabelData labelData = new UniqueLabelData(label);
+            averageMap.put(label, labelData);
+        }
+        // now add the labels to it
+        for(ImageLabel label: allLabels){
+            UniqueLabelData obj = averageMap.get(label.getName());
+            obj.appendScoreToLabel(label.getScore());
+        }
+        Log.v("nuttygeek_uni","Average Map: "+averageMap.toString());
+        Log.v("nuttygeek_all", "Unique Labels: "+uniqueLabelNames);
+        HashMap<String, UniqueLabelData> chartData = calculateAverageOfAverageMap(averageMap);
+        return chartData;
+    }
+
+    public HashMap<String, UniqueLabelData> calculateAverageOfAverageMap(HashMap<String, UniqueLabelData> map){
+        // print the content of the map
+        for(HashMap.Entry<String, UniqueLabelData> entry: map.entrySet()){
+            Log.v("nuttygeek_entry", entry.getValue().getLabelName()+ " : "+entry.getValue().getScoreList().toString());
+            entry.getValue().calculateAverage();
+            Log.v("nuttygeek_entry", entry.getValue().getLabelName()+ " : "+entry.getValue().getAverage());
+        }
+        return map;
+    }
+
+
+    public String getFrameNameFromLocation(LatLng point){
+        // look in time location map and get the frame no
+        String frameNo = null;
+        for(HashMap.Entry<Integer, LatLng> entry: timeLocationMap.entrySet()){
+            Log.v("nuttygeek_en", entry.getKey()+" : "+entry.getValue().toString());
+            if(point.equals(entry.getValue())){
+                frameNo = entry.getKey().toString();
+                Log.v("nuttygeek_frame_no", "Frame a point: "+point.toString()+ " is: "+frameNo);
+            }
+        }
+        return frameNo;
+    }
+
+    /**
+     * this fxn returns the list of image labels from image detection result based on given frame name
+     * @param frameName name of the frame
+     * @param result image detection result object
+     * @return list of image labels
+     */
+    public ArrayList<ImageLabel> getImageLabelsFromFrameName(String frameName, ImageDetectionResult result){
+        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
+        ArrayList<ImageLabel> labels = map.get(frameName);
+        return labels;
+    }
+
+    /**
+     * this fxn takes the frame name and return the absolute path of the corresponding image
+     * @param frameName name of the frame
+     * @return null
+     */
+    public String getAbsolutePathOfImageFromFrameName(String frameName){
+        String videoName = getVideoName();
+        Log.v("nuttygeek_path", "Video Name: "+videoName);
+        Log.v("nuttygeek_path", "Frame Name: "+frameName);
+        File f = new File(Environment.getExternalStorageDirectory()+"/RouteApp/"+videoName+"/"+frameName+".jpg");
+        String absPath = f.getAbsolutePath();
+        Log.v("nuttygeek_abs_path", "Abs Path: "+absPath);
+        return absPath;
+    }
+
+    /**
+     * this fxn takes an Image Label and returns the image label which we want to see
+     * @param label label passed which we get from the firebase image labeling
+     * @return a valid allowed label or null if we are not supposed to show any label
+     */
+    public ImageLabel getDesiredLabelObjectFromSimpleImageLabel(ImageLabel label){
+        // see if this label name is in the json file
+        ImageLabel newImageLabel = null;
+        // creating a input stream to read the json file
+        InputStream is = null;
+        try {
+            is = context.getAssets().open("labels.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            String myJson = new String(buffer, "UTF-8");
+            // creating json object from that json file called labels.json in assets folder
+            JSONObject obj = new JSONObject(myJson);
+            // getting new label if there is any to be changed
+            String newLabelName = obj.getString(label.getName());
+            Log.v("nuttygeek_json_labels", obj.getString(label.getName()));
+            // creating new label object with the allowed name
+            newImageLabel = new ImageLabel(label.getId(), newLabelName,label.getScore());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // returning either a new allowed image label or null is we are not supposed to show any label
+        return newImageLabel;
+    }
+
+    /**
+     * this fxn returns a new Image Detection Result by taking the old Image Detection Result Object changing the names of the Labels
+     * @param result old Image Detectionn Result Object
+     * @return New Image Detecttion Result Object
+     */
+    public ImageDetectionResult getNewImageDetectionResultFromOld(ImageDetectionResult result){
+        HashMap<String, ArrayList<ImageLabel>> map = new HashMap<>();
+        HashMap<String, ArrayList<ImageLabel>> newMap = new HashMap();
+        for(Map.Entry<String, ArrayList<ImageLabel>> entry: map.entrySet()){
+            String key = entry.getKey();
+            ArrayList<ImageLabel> labels = entry.getValue();
+            ArrayList<ImageLabel> newLabels = entry.getValue();
+            for(ImageLabel label: labels){
+                ImageLabel newLabel = getDesiredLabelObjectFromSimpleImageLabel(label);
+                if(newLabel != null){
+                    Log.v("nuttygeek_new_label", "Label: "+newLabel.getName());
+                    newLabels.add(newLabel);
+                }else{
+                    Log.v("nuttygeek_new_label", "Label: null");
+                }
+            }
+            newMap.put(key, newLabels);
+        }
+        ImageDetectionResult newResult = new ImageDetectionResult(result.getVideoName());
+        newResult.setFrameDataMap(newMap);
+        return newResult;
+    }
+
+
+
+
+
+
 
 }

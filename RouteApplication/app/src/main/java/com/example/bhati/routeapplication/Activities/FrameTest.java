@@ -1,12 +1,16 @@
 package com.example.bhati.routeapplication.Activities;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.appcompat.app.AppCompatActivity;
 
-import android.provider.ContactsContract;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,28 +25,21 @@ import com.example.bhati.routeapplication.Interface.OnFrameExtracted;
 import com.example.bhati.routeapplication.Pojo.FramesResult;
 import com.example.bhati.routeapplication.Pojo.ImageDetectionResult;
 import com.example.bhati.routeapplication.Pojo.ImageLabel;
+import com.example.bhati.routeapplication.Pojo.UniqueLabelData;
 import com.example.bhati.routeapplication.R;
 import com.example.bhati.routeapplication.helpers.FramesHelper;
 import com.example.bhati.routeapplication.helpers.SharedPrefHelper;
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.gson.Gson;
-import com.jjoe64.graphview.DefaultLabelFormatter;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.BarGraphSeries;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -55,17 +52,17 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
 
-    BarChart chart;
+    BarChart chart, frameChart;
     String videoUri;
     FramesHelper helper;
     ImageView image;
-    Button extractButton;
+    Button overAllButton;
     ProgressBar loading, progress;
     TextView answerText;
     String[] labelsStringArray;
@@ -76,6 +73,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
     MapboxMap map;
     String videoName;
     Polyline polyline;
+    ImageView frameImage;
     // list of points in main polyline
     ArrayList<LatLng> mainPolylinePoints;
     int progressValue;
@@ -93,9 +91,15 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         loading = findViewById(R.id.loading);
         answerText = findViewById(R.id.answer);
         chart = findViewById(R.id.chart);
+        frameChart = findViewById(R.id.frame_chart);
         progress = findViewById(R.id.progress);
         mapView = findViewById(R.id.map);
         loadingView  = findViewById(R.id.loading_view);
+        overAllButton = findViewById(R.id.overall_button);
+        frameImage = findViewById(R.id.frame_image);
+
+        overAllButton.setVisibility(View.GONE);
+        frameImage.setVisibility(View.GONE);
 
         // getting map data
         mapView.onCreate(savedInstanceState);
@@ -118,21 +122,37 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
         chart.setDrawBarShadow(false);
         chart.setMaxVisibleValueCount(100);
+        frameChart.setDrawBarShadow(false);
+        frameChart.setMaxVisibleValueCount(100);
+
+        //region testing
+//        ImageLabel imgLabel = helper.getDesiredLabelObjectFromSimpleImageLabel(new ImageLabel("asd", "Pony car", 0.56f));
+//        if(imgLabel!=null){
+//            Log.v("nuttygeek_allowed_label", imgLabel.getName());
+//        }else{
+//            Log.v("nuttygeek_allowed_label", "IMage Label is not allowed, we don'' need to add it in the calculation ");
+//        }
+        //endregion
 
         // if data is already present in shared pref don't do any processing
         imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
         Log.v("nuttygeek_oncreate", "Image Detection Object: "+new Gson().toJson(imageDetectionResult));
         if(imageDetectionResult != null){
             Log.v("nuttygeek_oncreate", "Shared Pref Already have the data no need to do anything ");
+            // trying to test if the new res with new labels have some values 
+            ImageDetectionResult newRes = helper.getNewImageDetectionResultFromOld(imageDetectionResult);
+            Log.v("nuttygeek_new_detection", newRes.toString());
             // put markers on map
             // -- get timestamps
             helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
             // convert list of timestamps into list of LatLng Objects
 //            ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
             // we will draw the marker on map ready fxn
-
             // hiding the loading view
             loadingView.setVisibility(View.GONE);
+            // hide the single frame chart
+            frameChart.setVisibility(View.GONE);
+
         }else{
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -141,19 +161,69 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                     extractButtonClickAction();
                     //uploadButtonAction();
                     loading.setVisibility(View.GONE);
+                    // hide the single frame chart
+                    frameChart.setVisibility(View.GONE);
 //                answerText.setVisibility(View.GONE);
                 }
-            }, 2000);
+            }, 1000);
         }
-
 
         //endregion
 
         // calling helper method
         //helper.getFrameFromVideo(videoUri, 10000, image);
         //Toast.makeText(this, "Length: "+helper.getLengthOfVideo(videoUri), Toast.LENGTH_SHORT).show();
-
+        overAllButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // hide the single frame graph
+                frameChart.setVisibility(View.GONE);
+                // show the over all graph
+                chart.setVisibility(View.VISIBLE);
+                // hide the button itself
+                overAllButton.setVisibility(View.GONE);
+                // hide the image
+                frameImage.setVisibility(View.GONE);
+            }
+        });
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        mapView.onSaveInstanceState(outState);
+    }
+
 
     public void uploadButtonAction(){
         try{
@@ -232,6 +302,9 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         helper.processAllImagesForLabeling(new GotLabels(){
             @Override
             public void gotLabelsSuccess(String videoName, String frameName, ArrayList<ImageLabel> labels) {
+                ArrayList<ImageLabel> desiredLabels = new ArrayList<>();
+                // filter the labels here, only add those labels which we want to add
+
                 // init the ImageDetectionResult Object
                 if(imageDetectionResult == null){
                     imageDetectionResult = new ImageDetectionResult(videoName);
@@ -243,7 +316,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 imageDetectionResult.appendImageLabels(frameName, labels);
                 // increment the progress
                 incrementProgress();
-                Log.v("nuttygeek_od", "ImageDetecttion Obj: "+new Gson().toJson(imageDetectionResult));
+                Log.v("nuttygeek_od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
             }
 
             @Override
@@ -309,7 +382,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         drawPolyline(mainPolylinePoints);
         // move the camera to show the polyline
         setMapCamera(mainPolylinePoints.get(0));
-        // if we have the result for image detecttion draw the markers on the map
+        // if we have the result for image detection draw the markers on the map
         if(imageDetectionResult!=null){
             ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
             drawMarkersOnMap(framePoints);
@@ -347,14 +420,163 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
      */
     public void drawMarkersOnMap(ArrayList<LatLng> points){
         for(LatLng point: points){
+            // if it is the first point
             map.addMarker(new MarkerOptions()
                     .position(point)
-                    .title("Frame: "+points.indexOf(point))
+                    .title("Single Frame Analysis")
+                    .snippet("Jeans: 10")
             );
         }
+        // now draw the starting of polyline
+        IconFactory iconFactory = IconFactory.getInstance(this);
+        map.addMarker(new MarkerOptions()
+        .position(mainPolylinePoints.get(0))
+        .title("Starting Point")
+        .setIcon(iconFactory.fromResource(R.drawable.marker_red))
+        );
+        // now draw the last point of polyline
+        map.addMarker(new MarkerOptions()
+        .position(mainPolylinePoints.get(mainPolylinePoints.size()-1))
+        .title("Last Point")
+        .setIcon(iconFactory.fromResource(R.drawable.marker_blue))
+        );
+        drawChartData();
+        //testDrawMap();
+        map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(@NonNull Marker marker) {
+                // show the over all button
+                overAllButton.setVisibility(View.VISIBLE);
+                // get the frame no on click
+                Log.v("nuttygeek_marker", "Position: "+marker.getPosition().toString());
+                String frameName = helper.getFrameNameFromLocation(marker.getPosition());
+                ArrayList<ImageLabel> labels =  helper.getImageLabelsFromFrameName(frameName, imageDetectionResult);
+                String str = "";
+                if (labels != null) {
+                    for(ImageLabel label: labels){
+                        str += "\n"+label.getName()+" : "+label.getScore();
+                    }
+                    marker.setSnippet(str);
+                }
+                // hide the overall chart
+                chart.setVisibility(View.GONE);
+                showSingleFrameMap(marker.getPosition());
+                // now show the image related to this marker
+                String absPath = helper.getAbsolutePathOfImageFromFrameName(frameName);
+                frameImage.setImageBitmap(BitmapFactory.decodeFile(absPath));
+                frameImage.setVisibility(View.VISIBLE);
+                ViewCompat.setTranslationZ(frameImage, 5);
+                return false;
+            }
+        });
     }
 
+    /**
+     * this fxn draw the chart data
+     */
+    public void drawChartData(){
+        HashMap<String, UniqueLabelData> chartData = helper.getChartData(imageDetectionResult);
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        ArrayList<String> labels = new ArrayList<>();
+        ArrayList<Float> valueList = new ArrayList<>();
 
+        // get labels from chartData
+        for(HashMap.Entry<String, UniqueLabelData> entry: chartData.entrySet()){
+            labels.add(entry.getKey());
+        }
+
+        // get values from hashmap
+        for(HashMap.Entry<String, UniqueLabelData> entry: chartData.entrySet()){
+            valueList.add(entry.getValue().getAverage());
+        }
+        // adding into entries
+        for(Float value: valueList){
+            entries.add(new BarEntry(valueList.indexOf(value), value));
+        }
+        //
+        BarDataSet set = new BarDataSet(entries,"Labels" );
+        set.setColors(ColorTemplate.COLORFUL_COLORS);
+        XAxis xaxis = chart.getXAxis();
+        xaxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xaxis.setDrawGridLines(false);
+        xaxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                int index = (int) value;
+                return labels.get(index);
+            }
+        });
+        BarData data = new BarData(set);
+        data.setBarWidth(0.9f);
+        chart.setData(data);
+        chart.setFitBars(true);
+        chart.invalidate();
+    }
+
+    /**
+     * this fxn hides the overall and shows the single frame map according to the marker clicked on
+     * @param position location of the marker clicked on
+     */
+    public void showSingleFrameMap(LatLng position){
+        // hide the overall frame
+        frameChart.setVisibility(View.VISIBLE);
+        // get frame data to show on map from this lat lng point
+        String frameName = helper.getFrameNameFromLocation(position);
+        Log.v("nuttygeek_single", "Frame Name: "+frameName);
+        ArrayList<ImageLabel> labelList = imageDetectionResult.getFrameDataMap().get(frameName);
+        // show it on map with iteration over labels
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        ArrayList<String> labels = new ArrayList<>();
+        for(ImageLabel label: labelList){
+            Log.v("nuttygeek_single_label", label.getName()+" : "+label.getScore());
+            labels.add(label.getName());
+            entries.add(new BarEntry(labelList.indexOf(label), label.getScore()));
+        }
+        BarDataSet set = new BarDataSet(entries,"Labels" );
+        set.setColors(ColorTemplate.COLORFUL_COLORS);
+        XAxis xaxis = frameChart.getXAxis();
+        xaxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xaxis.setDrawGridLines(false);
+        xaxis.setGranularity(1);
+        xaxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                if(value<0){
+                    return "";
+                }else{
+                    int index = (int) value;
+                    return labels.get(index);
+                }
+            }
+        });
+        BarData data = new BarData(set);
+        data.setBarWidth(0.9f);
+        frameChart.setData(data);
+        frameChart.setFitBars(true);
+        frameChart.invalidate();
+
+    }
+
+//    /**
+//     * this fxn is for testing image detection result allowed labels
+//     * @param result result got from the image detection
+//     */
+//    public void testAllowedLabels(ImageDetectionResult result){
+//        Log.v("nuttygeek_detect_result", "\n"+result.toString()+"\n");
+//        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
+//        for(Map.Entry<String, ArrayList<ImageLabel>> entry: map.entrySet()){
+//            ArrayList<ImageLabel> labels = entry.getValue();
+//            for(ImageLabel label: labels){
+//                ImageLabel newLabel = helper.getDesiredLabelObjectFromSimpleImageLabel(label);
+//                if(newLabel != null){
+//                    Log.v("nuttygeek_new_label", "Label: "+newLabel.getName());
+//                }else{
+//                    Log.v("nuttygeek_new_label", "Label: null");
+//                }
+//            }
+//        }
+//        Log.v("nuttygeek_detect_result", "\n"+result.toString()+"\n");
+//    }
 
 
 }

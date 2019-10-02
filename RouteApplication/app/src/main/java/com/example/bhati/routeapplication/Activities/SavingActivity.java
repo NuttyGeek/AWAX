@@ -240,7 +240,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         btnUpload.setVisibility(View.GONE);
         menuLayout.setVisibility(View.GONE);
 //       endregion
-
 //        region init color list view
         mainColorTextList = new ArrayList<>();
         //mainColorTextList.add(new ColorText("#ff0000", "Text 1"));
@@ -500,8 +499,10 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         seekbar_video.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             private int mProgressAtStartTracking;
             private final int SENSITIVITY = 0;
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
                 //marker_anim(getVideoTime());
                 // handle progress change
                 /*try {
@@ -1190,8 +1191,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     @SuppressLint("NewApi")
     private void marker_anim(long time) {
         Log.d("GET_SPEED", "time: " + time);
-        LatLng pos = marker_start_point.getPosition();
-        Log.v("nuttygeek_pos", "Position: "+pos.toString());
+
         if (isVideoCompleted) {
             marker_start_point.setPosition(point1);
             marker_start_point.setIcon(icon_strt);
@@ -1213,6 +1213,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         markerAnimator.setDuration(time_to_speed);
                         markerAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
                         markerAnimator.start();
+
                         d = d + time_to_speed;
                         Log.e(TAG, "run: d = :" + d + " count: " + count);
                         count++;
@@ -1244,7 +1245,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 // rem_time = rem_time + (time_to_speed + rem_time);
             }
         }
-        Log.v("nuttygeek_pos", "Position after doing everything: "+pos.toString());
+
 
     }
 
@@ -1346,6 +1347,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //     marker_anim(remaining_time);
         try {
             if (mapOfPosts.size() > 0) {
+
                 Log.d("SEEKER_SECOND", "IS :" + n_progressbar / 1000);
                 int found_value = mapOfPosts.get(n_progressbar / 1000);
                 Log.d("Found", "Value" + found_value);

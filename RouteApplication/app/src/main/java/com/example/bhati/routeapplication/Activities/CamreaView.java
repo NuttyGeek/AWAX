@@ -465,7 +465,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
 
             dialogUsername.show();
 
-
             //  convertToAudio(new File(String.valueOf(finalUri)));  //TODO convert Speech to text
             /**/
         });
