@@ -31,6 +31,7 @@
         android:id="@+id/btnrescordaudio"
         android:textOff="UnMute"
         android:textOn="Mute"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
