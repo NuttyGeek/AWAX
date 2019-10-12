@@ -237,7 +237,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         //endregion
 
 //       region visibilities
-        btnUpload.setVisibility(View.GONE);
+        // btnUpload.setVisibility(View.GONE);
         menuLayout.setVisibility(View.GONE);
 //       endregion
 //        region init color list view
