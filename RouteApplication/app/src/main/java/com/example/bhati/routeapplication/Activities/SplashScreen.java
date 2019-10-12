@@ -86,11 +86,11 @@ public class SplashScreen extends AppCompatActivity {
     private void requestMultiPermission() {
         Dexter.withActivity(this)
                 .withPermissions(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.CAMERA,
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.RECORD_AUDIO
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.ACCESS_FINE_LOCATION
                 )
                 .withListener(new MultiplePermissionsListener() {
                     @Override

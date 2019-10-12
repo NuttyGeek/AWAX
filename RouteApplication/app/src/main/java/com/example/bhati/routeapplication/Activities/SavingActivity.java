@@ -194,7 +194,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //endregion
         setContentView(R.layout.activity_saving);
 
-
         // creating frames helper
         framesHelper = new FramesHelper(this);
         framesButton = findViewById(R.id.framesButton);
@@ -702,7 +701,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         {
             // Create data variable for sent values to server
             //String data = URLEncoder.encode("files", "UTF-8")+ "=" + URLEncoder.encode(files, "UTF-8");
-
             String text = "";
             BufferedReader reader=null;
 
@@ -1198,6 +1196,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         }
         if (isVideoIsPlaying) {
             //double distance = marker_start_point.getPosition().distanceTo(list.get(count));
+            Log.v("nuttygeek_test", "testing the crash");
+            addMarker(point1);
             marker_start_point.setIcon(icon_playing);
             Log.d("GET_SPEED", "run: " + time / (list.size() - 1));
             time_to_speed = time / (list.size());
