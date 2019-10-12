@@ -2,6 +2,7 @@ package com.example.bhati.routeapplication;
 
 import android.app.Application;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -18,6 +19,11 @@ public class MyAppl extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        try{
+            FirebaseApp.initializeApp(getApplicationContext());
+        }catch(Exception e){
+            Log.v("nuttygeek_err", e.getMessage());
+        }
         FirebaseApp.initializeApp(this);
         mInstance = this;
     }

@@ -49,6 +49,7 @@ public class SplashScreen extends AppCompatActivity {
 
         setContentView(R.layout.activity_splash_screen);
         //region fixed user login
+        FirebaseApp.initializeApp(getApplicationContext());
         auth = FirebaseAuth.getInstance();
         auth.signInWithEmailAndPassword(properties.email, properties.password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
