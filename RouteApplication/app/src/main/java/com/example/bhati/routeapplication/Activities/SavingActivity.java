@@ -194,7 +194,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //endregion
         setContentView(R.layout.activity_saving);
 
-
         // creating frames helper
         framesHelper = new FramesHelper(this);
         framesButton = findViewById(R.id.framesButton);
@@ -1094,9 +1093,12 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             properties.colorstr =  new HashMap<String, String>();
             String filter=filePath.substring(0,filePath.length()-4);
             ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp", "chunk_" + filter, 1);
-            ctotal = chumkfiles.size();
-            for (int i = 0; i < chumkfiles.size(); i++) {
-                createColors();
+
+            if(chumkfiles!=null){
+                ctotal = chumkfiles.size();
+                for (int i = 0; i < chumkfiles.size(); i++) {
+                    createColors();
+                }
             }
             enableLocation();
         }
