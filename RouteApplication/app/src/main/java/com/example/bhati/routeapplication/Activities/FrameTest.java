@@ -112,12 +112,12 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         Intent i = getIntent();
         videoUri = i.getStringExtra("videoUri");
         mainPolylinePoints = (ArrayList<LatLng>) i.getSerializableExtra("list");
-        Log.v("nuttygeek_poly", "polylines coordinates: "+mainPolylinePoints.toString());
-        Log.v("nuttygeek", videoUri);
+        Log.v("log_poly", "polylines coordinates: "+mainPolylinePoints.toString());
+        Log.v("log", videoUri);
         helper.setVideoPath(videoUri);
         // right, after setting video path, get the video name
         videoName = helper.getVideoName();
-        Log.v("nuttygeek_vid", "Video Name: "+videoName);
+        Log.v("log_vid", "Video Name: "+videoName);
         answerText.setText("Please wait.. Analyzing the Video !");
 
         chart.setDrawBarShadow(false);
@@ -128,20 +128,20 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         //region testing
 //        ImageLabel imgLabel = helper.getDesiredLabelObjectFromSimpleImageLabel(new ImageLabel("asd", "Pony car", 0.56f));
 //        if(imgLabel!=null){
-//            Log.v("nuttygeek_allowed_label", imgLabel.getName());
+//            Log.v("allowed_label", imgLabel.getName());
 //        }else{
-//            Log.v("nuttygeek_allowed_label", "IMage Label is not allowed, we don'' need to add it in the calculation ");
+//            Log.v("allowed_label", "IMage Label is not allowed, we don'' need to add it in the calculation ");
 //        }
         //endregion
 
         // if data is already present in shared pref don't do any processing
         imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
-        Log.v("nuttygeek_oncreate", "Image Detection Object: "+new Gson().toJson(imageDetectionResult));
+        Log.v("oncreate", "Image Detection Object: "+new Gson().toJson(imageDetectionResult));
         if(imageDetectionResult != null){
-            Log.v("nuttygeek_oncreate", "Shared Pref Already have the data no need to do anything ");
+            Log.v("oncreate", "Shared Pref Already have the data no need to do anything ");
             // trying to test if the new res with new labels have some values 
             ImageDetectionResult newRes = helper.getNewImageDetectionResultFromOld(imageDetectionResult);
-            Log.v("nuttygeek_new_detection", newRes.toString());
+            Log.v("new_detection", newRes.toString());
             // put markers on map
             // -- get timestamps
             helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
@@ -288,13 +288,13 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
             @Override
             public void getExtractedFrameCount(int count) {
-                Log.v("nuttygeek_count", count+ "th frame extracted !");
+                Log.v("count", count+ "th frame extracted !");
                 incrementProgress();
             }
 
             @Override
             public void getTotalFramesCount(int count) {
-                Log.v("nuttygeek_count", "Total no of frames to be extracted: "+count);
+                Log.v("count", "Total no of frames to be extracted: "+count);
                 setMaxValueForProgressBar(count*2);
             }
         });
@@ -308,7 +308,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 // init the ImageDetectionResult Object
                 if(imageDetectionResult == null){
                     imageDetectionResult = new ImageDetectionResult(videoName);
-                    Log.v("nuttygeek_result", "image Detection result no initialized , intialized it !");
+                    Log.v("result", "image Detection result no initialized , intialized it !");
                 }
                 // hiding the loading view
                 loadingView.setVisibility(View.GONE);
@@ -316,7 +316,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 imageDetectionResult.appendImageLabels(frameName, labels);
                 // increment the progress
                 incrementProgress();
-                Log.v("nuttygeek_od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
+                Log.v("od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
             }
 
             @Override
@@ -328,11 +328,11 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             public void gotLabelsCompleted(String videoName) {
                 // save the whole object in Shared Pref
                 Toast.makeText(FrameTest.this, "Got All the images processed !", Toast.LENGTH_SHORT).show();
-                Log.v("nuttygeek_completed", "Image Detection Obj after completion: "+new Gson().toJson(imageDetectionResult));
+                Log.v("completed", "Image Detection Obj after completion: "+new Gson().toJson(imageDetectionResult));
                 prefHelp.saveObjectDetectionData(videoName, imageDetectionResult);
                 // now try to get the value from Shared Pref
                 imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
-                Log.v("nuttygeek_sp", "\nShared Pref: "+new Gson().toJson(imageDetectionResult));
+                Log.v("sp", "\nShared Pref: "+new Gson().toJson(imageDetectionResult));
                 // creating time stamp map
                 helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
                 // getting coordinates
@@ -343,7 +343,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
             @Override
             public void getProcessedFramesCount(int count) {
-                Log.v("nuttygeek_count", count+"th frame processed");
+                Log.v("count", count+"th frame processed");
                 incrementProgress();
             }
         });
@@ -359,7 +359,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             public void run() {
                 int old = progress.getProgress();
                 progress.setProgress(old+5);
-                Log.v("nuttygeek_count", "Progress: "+old+1);
+                Log.v("count", "Progress: "+old+1);
             }
         });
     }
@@ -372,7 +372,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         progress.setIndeterminate(false);
         progress.setProgress(0);
         progress.setMax(value);
-        Log.v("nuttygeek_count", "Setting Progress Bar Max Value: "+value);
+        Log.v("count", "Setting Progress Bar Max Value: "+value);
     }
 
     @Override
@@ -448,7 +448,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 // show the over all button
                 overAllButton.setVisibility(View.VISIBLE);
                 // get the frame no on click
-                Log.v("nuttygeek_marker", "Position: "+marker.getPosition().toString());
+                Log.v("marker", "Position: "+marker.getPosition().toString());
                 String frameName = helper.getFrameNameFromLocation(marker.getPosition());
                 ArrayList<ImageLabel> labels =  helper.getImageLabelsFromFrameName(frameName, imageDetectionResult);
                 String str = "";
@@ -522,13 +522,13 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         frameChart.setVisibility(View.VISIBLE);
         // get frame data to show on map from this lat lng point
         String frameName = helper.getFrameNameFromLocation(position);
-        Log.v("nuttygeek_single", "Frame Name: "+frameName);
+        Log.v("single", "Frame Name: "+frameName);
         ArrayList<ImageLabel> labelList = imageDetectionResult.getFrameDataMap().get(frameName);
         // show it on map with iteration over labels
         ArrayList<BarEntry> entries = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
         for(ImageLabel label: labelList){
-            Log.v("nuttygeek_single_label", label.getName()+" : "+label.getScore());
+            Log.v("single_label", label.getName()+" : "+label.getScore());
             labels.add(label.getName());
             entries.add(new BarEntry(labelList.indexOf(label), label.getScore()));
         }
@@ -562,20 +562,20 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 //     * @param result result got from the image detection
 //     */
 //    public void testAllowedLabels(ImageDetectionResult result){
-//        Log.v("nuttygeek_detect_result", "\n"+result.toString()+"\n");
+//        Log.v("detect_result", "\n"+result.toString()+"\n");
 //        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
 //        for(Map.Entry<String, ArrayList<ImageLabel>> entry: map.entrySet()){
 //            ArrayList<ImageLabel> labels = entry.getValue();
 //            for(ImageLabel label: labels){
 //                ImageLabel newLabel = helper.getDesiredLabelObjectFromSimpleImageLabel(label);
 //                if(newLabel != null){
-//                    Log.v("nuttygeek_new_label", "Label: "+newLabel.getName());
+//                    Log.v("new_label", "Label: "+newLabel.getName());
 //                }else{
-//                    Log.v("nuttygeek_new_label", "Label: null");
+//                    Log.v("new_label", "Label: null");
 //                }
 //            }
 //        }
-//        Log.v("nuttygeek_detect_result", "\n"+result.toString()+"\n");
+//        Log.v("detect_result", "\n"+result.toString()+"\n");
 //    }
 
 

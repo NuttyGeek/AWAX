@@ -66,7 +66,7 @@ public class KeywordsHelper {
             bodyParams.put("sentence", sentence);
         }
         catch(Exception e) {
-            Log.v("nuttygeek_keywords", e.getMessage());
+            Log.v("keywords", e.getMessage());
         }
         RequestBody body = RequestBody.create(bodyParams.toString(), JSON);
         Request request = new Request.Builder()
@@ -76,7 +76,7 @@ public class KeywordsHelper {
         try {
             Response response = client.newCall(request).execute();
             String jsonData = response.body().string();
-            Log.v("nuttygeek_keywords","Response: "+ jsonData);
+            Log.v("keywords","Response: "+ jsonData);
 
             Gson gson = new Gson();
             KeywordsPOJO pojo = gson.fromJson(jsonData, KeywordsPOJO.class);
@@ -86,7 +86,7 @@ public class KeywordsHelper {
         }catch (Exception e) {
             // sending error indication back to the calling activity
             callback.onFailure();
-            Log.v("nuttygeek_keywords", "error getting response: "+e.getMessage()+ e.getCause());
+            Log.v("keywords", "error getting response: "+e.getMessage()+ e.getCause());
             e.printStackTrace();
         }
 
@@ -122,14 +122,14 @@ public class KeywordsHelper {
             Response res = client.newCall(request).execute();
             try{
                 JSONObject obj = new JSONObject(res.body().string());
-                Log.v("nuttygeek_json", (String) obj.get("keywords"));
+                Log.v("json", (String) obj.get("keywords"));
             }catch(JSONException e){
-                Log.e("nuttygeek", "cannot parse response into JSON Array");
+                Log.e("error", "cannot parse response into JSON Array");
             }
-            Log.v("nuttygeek_res", res.body().string());
+            Log.v("res", res.body().string());
             Toast.makeText(context, res.body().string(), Toast.LENGTH_SHORT).show();
         }catch(IOException e){
-            Log.v("nuttygeek_err", e.getMessage()+ "\n" +e.getCause());
+            Log.v("err", e.getMessage()+ "\n" +e.getCause());
         }
     }
 

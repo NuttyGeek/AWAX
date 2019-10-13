@@ -44,7 +44,7 @@ public class ImageDetectionResult {
      * @param labels arraylist of image labels
      */
     public void appendImageLabels(String frameName, ArrayList<ImageLabel> labels){
-        Log.v("nuttygeek_append", "adding labels to the object: "+labels.toString());
+        Log.v("append", "adding labels to the object: "+labels.toString());
         frameDataMap.put(frameName, labels);
     }
 }

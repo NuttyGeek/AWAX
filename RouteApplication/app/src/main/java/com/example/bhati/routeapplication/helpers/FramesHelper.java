@@ -74,13 +74,13 @@ public class FramesHelper {
      */
     public void setVideoPath(String path){
         String[] paths =  path.split("file://");
-        Log.v("nuttygeek", "[Splited String]: "+paths[1]);
+        Log.v("string", "[Splited String]: "+paths[1]);
         // setting path of video file
         this.videoPath = paths[1];
         metadataRetriever.setDataSource(videoPath);
         String length = this.getLengthOfVideo();
         this.lengthOfVideo = Integer.parseInt(length);
-        Log.v("nuttygeek", "[Length]: "+length);
+        Log.v("length", "[Length]: "+length);
         // GENERATE TIME STAMPS and add it to a public property of this class
         generateTimestamps();
     }
@@ -126,7 +126,7 @@ public class FramesHelper {
         // converting bitmap to jpeg
         try {
             if(file.exists()){
-                Log.v("nuttygeek", "File already present ! Doing Nothing");
+                Log.v("file", "File already present ! Doing Nothing");
                 //file.delete();
             }
             FileOutputStream out = new FileOutputStream(file);
@@ -134,11 +134,11 @@ public class FramesHelper {
 
             out.flush();
             out.close();
-            Log.v("nuttygeek_file", "File Created: "+fileName);
+            Log.v("file", "File Created: "+fileName);
             Toast.makeText(context, "File Created !", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("nuttygeek", e.toString());
+            Log.e("error", e.toString());
             Toast.makeText(context, "Error!", Toast.LENGTH_SHORT).show();
         }
     }
@@ -169,14 +169,14 @@ public class FramesHelper {
      * generates time stamps avoiding the 0th timestamp
      */
     public void generateTimestamps(){
-        Log.v("nuttygeek_time", "inside the time stamp fxn ");
+        Log.v("time", "inside the time stamp fxn ");
         int i=0;
         while(i<this.lengthOfVideo){
-            Log.v("nuttygeek_time", "[val]: "+i);
+            Log.v("time", "[val]: "+i);
             timestamps.add(i);
             i=i+REGULAR_FRAME_INTERVAL;
         }
-        Log.v("nuttygeek_timestamps", timestamps.toString());
+        Log.v("timestamps", timestamps.toString());
     }
 
     /**
@@ -194,7 +194,7 @@ public class FramesHelper {
         // sending total no of frames to be processed
         callback.getTotalFramesCount(timestamps.size());
         for (int i=0; i<timestamps.size();i++){
-            Log.v("nuttygeek_filename", "filename: "+timestamps.get(i).toString());
+            Log.v("filename", "filename: "+timestamps.get(i).toString());
             getFrameFromVideo(timestamps.get(i));
             // sending index of frame processed, used for updating progress
             callback.getExtractedFrameCount(i+1);
@@ -235,14 +235,14 @@ public class FramesHelper {
      */
     public void processAllImagesForLabeling(GotLabels callback){
         // get the video dir
-        Log.v("nuttygeek_path", "path: "+getVideoDirName());
+        Log.v("path", "path: "+getVideoDirName());
         // get a list of file uri in that video dir
         ArrayList<Uri> uris = getAllImageUrisFromVideoFolder();
-        Log.v("nuttygeek_uris", uris.toString());
+        Log.v("uris", uris.toString());
         // process each image
         for (Uri uri: uris){
             if(uris.indexOf(uri) == uris.size()-1){
-                Log.v("nuttygeek_last", "\n\nThis is the last uri in list: "+uri.toString());
+                Log.v("last", "\n\nThis is the last uri in list: "+uri.toString());
                 processImageForLabeling(uri, callback, uris.indexOf(uri), true);
             }else{
                 processImageForLabeling(uri, callback, uris.indexOf(uri), false);
@@ -260,7 +260,7 @@ public class FramesHelper {
      * @param last boolean value to indicate the the uri passed is last
      */
     public void processImageForLabeling(@NotNull Uri uri, GotLabels callback, int index, boolean last){
-        Log.v("nuttygeek_label", "Uri: "+uri.toString());
+        Log.v("label", "Uri: "+uri.toString());
         try{
             FirebaseVisionImage image = FirebaseVisionImage.fromFilePath(context, uri);
             // get on device image labeler
@@ -274,9 +274,9 @@ public class FramesHelper {
                     String videoName = getVideoFileNameFromUriWithoutExtensions(videoPath);
                     // get frame name from uri
                     String frameName = getFrameNameFromUriWithoutExtension(uri, getVideoFileNameFromUriWithoutExtensions(videoPath));
-                    Log.v("nuttygeek_frame_name", "Frame Name: "+frameName+ " Video Name: "+videoName);
+                    Log.v("frame_name", "Frame Name: "+frameName+ " Video Name: "+videoName);
                     for(FirebaseVisionImageLabel label: firebaseVisionImageLabels){
-                        Log.v("nuttygeek_success", label.getText()+" : "+label.getConfidence());
+                        Log.v("success", label.getText()+" : "+label.getConfidence());
                         // convert label object to our own label object
                         ImageLabel imgLabel = new ImageLabel(label.getEntityId(),label.getText(), label.getConfidence());
                         // adding all simplified label object to my arraylist
@@ -295,11 +295,11 @@ public class FramesHelper {
                 public void onFailure(@NonNull Exception e) {
                     callback.gotLabelsFailure(e.toString());
                     e.printStackTrace();
-                    Log.v("nuttygeek_fail", "Error: "+e.toString());
+                    Log.v("fail", "Error: "+e.toString());
                 }
             });
         }catch(IOException e){
-            Log.e("nuttygeek", "Error: IO Error while reading image uri from video folder");
+            Log.e("error", "Error: IO Error while reading image uri from video folder");
             Toast.makeText(context, "IO Error, while reading image uri for video folder ", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
@@ -317,10 +317,10 @@ public class FramesHelper {
         File[] files = directory.listFiles();
         for (File f: files){
             String frameName = getFrameNameFromAbsPathWithExtension(f.getAbsolutePath(), getVideoFileNameFromUriWithoutExtensions(videoPath));
-            Log.v("nuttygeek_file", "Frame Name: "+frameName);
+            Log.v("file", "Frame Name: "+frameName);
             // if the frame is 0.jpg don't add it for analysis
             if(frameName.equals("0.jpg")){
-                Log.v("nuttygeek_zero", "Frame name is 0.jpg not inclding this frame in analysis ");
+                Log.v("zero", "Frame name is 0.jpg not inclding this frame in analysis ");
             }else{
                 Uri uri = Uri.fromFile(f);
                 listOfImageUris.add(uri);
@@ -357,7 +357,7 @@ public class FramesHelper {
         String path = uri.toString();
         File f = new File(path);
         String absPath = f.getAbsolutePath();
-        Log.v("nuttygeek_abs", "Ansolute Path From Uri: "+absPath);
+        Log.v("abs", "Ansolute Path From Uri: "+absPath);
     }
 
     /**
@@ -384,15 +384,15 @@ public class FramesHelper {
         ArrayList<Integer> frameIntTimeStamps = getIntArrayListFromStringArrayListSorted(frameTimeStamps);
         int frameTimeStampSize = frameTimeStamps.size();
         int coordinatesSize = points.size();
-        Log.v("nuttygeek_time", "Size of time Stamps: "+frameTimeStampSize);
-        Log.v("nuttygeek_points", "Size of polyline Points: "+coordinatesSize);
+        Log.v("time", "Size of time Stamps: "+frameTimeStampSize);
+        Log.v("points", "Size of polyline Points: "+coordinatesSize);
         int gap = points.size()/frameTimeStampSize;
         ArrayList<LatLng> newCoordinates = getEveryNthValue(gap, points);
         // creating the hashmap
         for(int i=0; i<frameTimeStampSize; i++){
             timeLocationMap.put(frameIntTimeStamps.get(i), newCoordinates.get(i));
         }
-        Log.v("nuttygeek_map", "Time Location Map: "+timeLocationMap);
+        Log.v("map", "Time Location Map: "+timeLocationMap);
     }
 
 
@@ -409,8 +409,8 @@ public class FramesHelper {
                 newList.add(points.get(i));
             }
         }
-        Log.v("nuttygeek_new", "new List: "+newList.toString());
-        Log.v("nuttygeek_new", "Size of new List: "+newList.size());
+        Log.v("new", "new List: "+newList.toString());
+        Log.v("new", "Size of new List: "+newList.size());
         return newList;
     }
 
@@ -450,7 +450,7 @@ public class FramesHelper {
         ArrayList<ImageLabel> allLabels = new ArrayList<>();
         HashMap<String, ArrayList<ImageLabel>> dataMap = result.getFrameDataMap();
         for(HashMap.Entry<String, ArrayList<ImageLabel>> entry : dataMap.entrySet()){
-            Log.v("nuttygeek_hash", "entry: "+entry.toString());
+            Log.v("hash", "entry: "+entry.toString());
             ArrayList<ImageLabel> labelsInAFrame = entry.getValue();
             // iterating over the image label objects in an list
             for(int i=0; i<labelsInAFrame.size(); i++){
@@ -479,8 +479,8 @@ public class FramesHelper {
             UniqueLabelData obj = averageMap.get(label.getName());
             obj.appendScoreToLabel(label.getScore());
         }
-        Log.v("nuttygeek_uni","Average Map: "+averageMap.toString());
-        Log.v("nuttygeek_all", "Unique Labels: "+uniqueLabelNames);
+        Log.v("uni","Average Map: "+averageMap.toString());
+        Log.v("all", "Unique Labels: "+uniqueLabelNames);
         HashMap<String, UniqueLabelData> chartData = calculateAverageOfAverageMap(averageMap);
         return chartData;
     }
@@ -488,9 +488,9 @@ public class FramesHelper {
     public HashMap<String, UniqueLabelData> calculateAverageOfAverageMap(HashMap<String, UniqueLabelData> map){
         // print the content of the map
         for(HashMap.Entry<String, UniqueLabelData> entry: map.entrySet()){
-            Log.v("nuttygeek_entry", entry.getValue().getLabelName()+ " : "+entry.getValue().getScoreList().toString());
+            Log.v("entry", entry.getValue().getLabelName()+ " : "+entry.getValue().getScoreList().toString());
             entry.getValue().calculateAverage();
-            Log.v("nuttygeek_entry", entry.getValue().getLabelName()+ " : "+entry.getValue().getAverage());
+            Log.v("entry", entry.getValue().getLabelName()+ " : "+entry.getValue().getAverage());
         }
         return map;
     }
@@ -500,10 +500,10 @@ public class FramesHelper {
         // look in time location map and get the frame no
         String frameNo = null;
         for(HashMap.Entry<Integer, LatLng> entry: timeLocationMap.entrySet()){
-            Log.v("nuttygeek_en", entry.getKey()+" : "+entry.getValue().toString());
+            Log.v("en", entry.getKey()+" : "+entry.getValue().toString());
             if(point.equals(entry.getValue())){
                 frameNo = entry.getKey().toString();
-                Log.v("nuttygeek_frame_no", "Frame a point: "+point.toString()+ " is: "+frameNo);
+                Log.v("frame_no", "Frame a point: "+point.toString()+ " is: "+frameNo);
             }
         }
         return frameNo;
@@ -528,11 +528,11 @@ public class FramesHelper {
      */
     public String getAbsolutePathOfImageFromFrameName(String frameName){
         String videoName = getVideoName();
-        Log.v("nuttygeek_path", "Video Name: "+videoName);
-        Log.v("nuttygeek_path", "Frame Name: "+frameName);
+        Log.v("path", "Video Name: "+videoName);
+        Log.v("path", "Frame Name: "+frameName);
         File f = new File(Environment.getExternalStorageDirectory()+"/RouteApp/"+videoName+"/"+frameName+".jpg");
         String absPath = f.getAbsolutePath();
-        Log.v("nuttygeek_abs_path", "Abs Path: "+absPath);
+        Log.v("abs_path", "Abs Path: "+absPath);
         return absPath;
     }
 
@@ -557,7 +557,7 @@ public class FramesHelper {
             JSONObject obj = new JSONObject(myJson);
             // getting new label if there is any to be changed
             String newLabelName = obj.getString(label.getName());
-            Log.v("nuttygeek_json_labels", obj.getString(label.getName()));
+            Log.v("json_labels", obj.getString(label.getName()));
             // creating new label object with the allowed name
             newImageLabel = new ImageLabel(label.getId(), newLabelName,label.getScore());
         } catch (Exception e) {
@@ -582,10 +582,10 @@ public class FramesHelper {
             for(ImageLabel label: labels){
                 ImageLabel newLabel = getDesiredLabelObjectFromSimpleImageLabel(label);
                 if(newLabel != null){
-                    Log.v("nuttygeek_new_label", "Label: "+newLabel.getName());
+                    Log.v("new_label", "Label: "+newLabel.getName());
                     newLabels.add(newLabel);
                 }else{
-                    Log.v("nuttygeek_new_label", "Label: null");
+                    Log.v("new_label", "Label: null");
                 }
             }
             newMap.put(key, newLabels);

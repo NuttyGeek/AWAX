@@ -54,7 +54,7 @@ public class SplashScreen extends AppCompatActivity {
         auth.signInWithEmailAndPassword(properties.email, properties.password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
-                Log.v("nuttygeek_login", "Email: "+authResult.getUser().getEmail()+" UID: "+authResult.getUser().getUid());
+                Log.v("login", "Email: "+authResult.getUser().getEmail()+" UID: "+authResult.getUser().getUid());
                 Toast.makeText(SplashScreen.this, "UID: "+authResult.getUser().getUid(), Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {

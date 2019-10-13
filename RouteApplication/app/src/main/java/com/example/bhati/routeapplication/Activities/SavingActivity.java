@@ -266,7 +266,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                     @Override
                                     public void run() {
                                         //TODO: show dialog with keywords
-                                        //Log.v("nuttygeek_keywords", keywords.toString());
+                                        //Log.v("keywords", keywords.toString());
                                         //showToast("keywords: "+keywords.toString());
                                         KeywordsDialog keywordsDialog = new KeywordsDialog(SavingActivity.this);
                                         String content  = keywordsDialog.convertListIntoString(keywords);
@@ -291,14 +291,14 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 //showDialogWithText(mainColorTextList.get(i).getText());
                 //region calling simulate map click function
                 //        create a static map location for testing, this location will be shown on map on every color click
-                Log.v("nuttygeek", "[Color Clicked]: "+i);
+                Log.v("color", "[Color Clicked]: "+i);
                 //getting the first point of the respective polyline from properties class
                 LatLng point = properties.firstCoordinatesOfPolylines.get(i);
                 mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
                 mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
                             @Override
                             public void onSuccess(double smallestDistance, LatLng latlng, int position) {
-                                Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+                                Log.v("map", "[Simulate Map Click]: adding marker");
                                 addMarkerNew(smallestDistance, latlng, position);
                             }
                             @Override
@@ -578,7 +578,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
                 dd = new DBHelper(SavingActivity.this);
                 String speech =dd.getSpeechData(filePath);
-                Log.v("nuttygeek", "speech"+speech);
+                Log.v("speech", "speech"+speech);
 //                if result is not already present, we have to upload the file
                 if(speech.equals(""))
                 {
@@ -663,7 +663,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                     listChumktext.add(textdata[i]);
                                     listChumktime.add(chumk);
                                 }
-                                Log.v("nuttygeek","list chunk: (0) "+listChumktext.get(0).toString());
+                                Log.v("chunk","list chunk: (0) "+listChumktext.get(0).toString());
                             }
 //                          testing
                             showColorList(null, null);
@@ -989,7 +989,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         try {
                             JSONObject jObj = new JSONObject(response);
                             String message = jObj.getString("message");
-                            Log.v("nuttygeek", message);
+                            Log.v("msg", message);
                             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                             ct++;
                             if(ct == sizes)
@@ -1746,7 +1746,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      * @param i
      */
     public void addMarkerNew(double distance, LatLng point, int i) {
-        Log.v("nuttygeek", "[addMarkerNew]: adding new marker on map");
+        Log.v("marker", "[addMarkerNew]: adding new marker on map");
         if (distance < 50) {
             // If distance is less than 100 meters, this is your polyline
             marker_start_point.remove();
@@ -1823,7 +1823,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             salt.append(SALTCHARS.charAt(index));
         }
         String saltStr = salt.toString();
-        Log.d("nuttygeek", "[Create Color String]: #"+saltStr);
+        Log.d("color", "[Create Color String]: #"+saltStr);
         return "#"+saltStr;
     }
 
@@ -1841,9 +1841,9 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         }
         properties.colorstr.put(cdata,cdata);
         properties.colorsdata.add(cdata);
-        Log.d("nuttygeek", "[Create Colors] adding color: "+cdata);
-        Log.v("nuttygeek", "Color String Hashmap: "+properties.colorstr.toString());
-        Log.v("nuttygeek", "ColorsData ArrayList: "+properties.colorsdata.toString());
+        Log.d("color", "[Create Colors] adding color: "+cdata);
+        Log.v("color", "Color String Hashmap: "+properties.colorstr.toString());
+        Log.v("color", "ColorsData ArrayList: "+properties.colorsdata.toString());
     }
     //    endregion
 //    region adding polylines on map
