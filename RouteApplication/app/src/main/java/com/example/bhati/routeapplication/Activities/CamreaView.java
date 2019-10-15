@@ -126,10 +126,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_capture_dialogue);
 
-//        CreatSubExcelSheet("Sheet_One");
-//        saveSubListSheet("15/10/2019", "00:00:01", "15.10", "25.10", "00:00:10","file1.mp4",
-//                "path1", "file_name1", "Sheet_One", 5);
-
         arrayList = new ArrayList<>();
         arrayList_recorder=new ArrayList<>();
         arrayList_video = new ArrayList<>();
@@ -915,7 +911,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             Label cell_latitude = new Label(2, row, latitude);
             Label cell_longitude = new Label(3, row, longitude);
             //getting formatted time
-            String formattedMediaTime = convertNumberIntoTimeFormat(row);
+            String formattedMediaTime = convertNumberIntoTimeFormat((long) row);
             Label cell_mdeia = new Label(4, row, formattedMediaTime);
 //            Label cell_mdeia = new Label(4, row, mdeia);
 //            Label cell_audio_time = new Label(5, row, audio_time);
@@ -1051,28 +1047,36 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             }
         }, 0, 1000);
     }
+
+    /**
+     * this fxn returns the current date from the system
+     * @return
+     */
     public String  getCurrentDate()
     {
         String today_date=null;
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
         String formattedDate = df.format(c);
         today_date=formattedDate;
         return today_date;
     }
+
 
     /**
      * this fxn takes a string number and retun it in time format
      * if the number is 62 it will return it like 00:01:02
      * @param num string number
      */
-    public String convertNumberIntoTimeFormat(int num){
+    public String convertNumberIntoTimeFormat(long num){
         // calculate no of hours from seconds
-        int hours = num/3600;
-        int remaningHours = num%3600;
-        int minutes = remaningHours/60;
-        int seconds = remaningHours%60;
+        // remove the days if there are any
+        long hoursFromToday = num%86400;
+        long hours = hoursFromToday/3600;
+        long remaningHours = hoursFromToday%3600;
+        long minutes = remaningHours/60;
+        long seconds = remaningHours%60;
         String formattedHours = String.format("%02d", hours);
         String formattedSeconds = String.format("%02d", seconds);
         String formattedMinutes = String.format("%02d", minutes);
@@ -1086,12 +1090,50 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
      * @param fileName filename
      */
     public void updateCsvFile(ArrayList<LatLng> coordinates, String fileName){
-        for(int i=0; i<coordinates.size(); i++){
-            LatLng coordinate = coordinates.get(i);
-            String latitude = String.valueOf(coordinate.getLatitude());
-            String longitude = String.valueOf(coordinate.getLongitude());
-            // calling a prebuilt function to update csv file
-            saveSubListSheet(getCurrentDate(),"0:00",latitude, longitude,"",convertNumberIntoTimeFormat(i), "","",fileName,i+1);
+        if(coordinates!=null && coordinates.size()>0){
+            ArrayList<String> timeList = getTimeList(coordinates.size());
+
+            for(int i=0; i<coordinates.size(); i++){
+                LatLng coordinate = coordinates.get(i);
+                String latitude = String.valueOf(coordinate.getLatitude());
+                String longitude = String.valueOf(coordinate.getLongitude());
+                //String time = getTimeFromVideoList(i);
+                // getting the time from another array list_video
+                // calling a prebuilt function to update csv file
+                saveSubListSheet(getCurrentDate(),timeList.get(i),latitude, longitude,"",convertNumberIntoTimeFormat((long)i), "","",fileName,i+1);
+            }
         }
     }
+
+    /**
+     * this fxn creates a list of time from the current time in millis
+     * @param size size of the list needed
+     * @return list of time as string
+     */
+    public ArrayList<String> getTimeList(int size){
+        ArrayList<String> resultList = new ArrayList<>();
+        long current_time = System.currentTimeMillis();
+        long time_in_secs = (int) (current_time/1000);
+        for(int i=0; i<size; i++){
+            String formattedTime = convertNumberIntoTimeFormat(time_in_secs);
+            resultList.add(formattedTime);
+            time_in_secs++;
+        }
+        return resultList;
+    }
+
+//    /**
+//     * this fxn is for testing it will have an array list
+//     */
+//    public void testCode(){
+//        ArrayList<LatLng> points = new ArrayList<>();
+//        points.add(new LatLng(80.12, 45.11, 34.11));
+//        points.add(new LatLng(80.12, 45.11, 34.11));
+//        points.add(new LatLng(80.12, 45.11, 34.11));
+//        points.add(new LatLng(80.12, 45.11, 34.11));
+//        points.add(new LatLng(80.12, 45.11, 34.11));
+//        points.add(new LatLng(80.12, 45.11, 34.11));
+//        updateCsvFile(points,"Sheet_One");
+//    }
+
 }
