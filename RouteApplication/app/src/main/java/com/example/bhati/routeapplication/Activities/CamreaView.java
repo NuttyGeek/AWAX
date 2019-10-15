@@ -125,11 +125,16 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_capture_dialogue);
+
+//        CreatSubExcelSheet("Sheet_One");
+//        saveSubListSheet("15/10/2019", "00:00:01", "15.10", "25.10", "00:00:10","file1.mp4",
+//                "path1", "file_name1", "Sheet_One", 5);
+
         arrayList = new ArrayList<>();
         arrayList_recorder=new ArrayList<>();
         arrayList_video = new ArrayList<>();
         obj = new JSONObject();
-         jsonArray = new JSONArray();
+        jsonArray = new JSONArray();
         myDb = new DBHelper(this);
         //gpsloc = new GPSTracker(CamreaView.this);
         myReceiver = new MyReceiver();
@@ -437,7 +442,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             EditText username = dialogUsername.findViewById(R.id.edUsername);
             Button btnSave2 = dialogUsername.findViewById(R.id.btnSave);
             Button btnCancel2 = dialogUsername.findViewById(R.id.btnCancel);
-
             btnSave2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -446,13 +450,13 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                         username.setError("Required field");
                         return;
                     }
-
                     dialogUsername.dismiss();
                     final long currentTimeMillis = System.currentTimeMillis();
                     final String audio_file_path = vfile + ".wav";
                     CreatSubExcelSheet(video_file.getName());
+                    // after creating subexcel sheet now update the sub excel sheet
+                    updateCsvFile(arrayList, video_file.getName());
                     storeDataInDb(finalUri, file, size, name,audio_file_path);
-
                 }
             });
 
@@ -484,7 +488,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
         String time = timeFormat.format(calendar.getTime());
         size = size / 1000;
-
         String size_in_mbs = String.format("%.2f", size);
         if (arrayList.size() > 0) {
             String city_name = GetCurrentLocationName(arrayList.get(0).getLatitude(), arrayList.get(0).getLongitude());
@@ -497,42 +500,41 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             if (i) {
                 arrayList.clear();
                 File folder = new File(Environment.getExternalStorageDirectory() + "/RouteApp");
-                if (!folder.exists()) { folder.mkdir();
+                if (!folder.exists()) {
+                    folder.mkdir();
                 }
                 Log.d("AUDIO_LIST","Size:"+arrayList_video.size());
-
-                for (int j=0;j<arrayList_video.size();j++)
+                for (int j=0;j<arrayList.size();j++)
                 {
-                    Log.d("ITEM_Name","Is"+arrayList_video.get(j));
-                    String[] separated = arrayList_video.get(j).split(",");
-                    String point_lat =separated[0]; // this wil   l contain "Fruit"
-                    String point_long_time=separated[1];
-                    Log.d("REMIANING","STRING"+point_long_time);
-                    String point_time=separated[2];
-                    String point_systemtime=separated[3];
-                    saveSubListSheet(getCurrentDate(),point_systemtime,point_lat,point_long_time,file.getName(),point_time,audio_file_path,"",
-                            video_file.getName(),j+2);
+                    //Log.d("ITEM_Name","Is"+arrayList_video.get(j));
+                    //String[] separated = arrayList_video.get(j).split(",");
+                    //String point_lat =separated[0]; // this wil   l contain "Fruit"
+                    //String point_long_time=separated[1];
+                    String point_lat = String.valueOf(arrayList.get(j).getLatitude());
+                    String point_long_time = String.valueOf(arrayList.get(j).getLongitude());
+                    //Log.d("REMIANING","STRING"+point_long_time);
+                    //String point_time=separated[2];
+                    //String point_systemtime=separated[3];
+                    // adding data to excel sheet
+//                    saveSubListSheet(getCurrentDate(),"0:00",point_lat,point_long_time,file.getName(),convertNumberIntoTimeFormat(j+1),audio_file_path,"",
+//                            video_file.getName(),j+1);
                 }
-                convertToAudio(file,audio_file_path,folder);
+                //convertToAudio(file,audio_file_path,folder);
             }
         } else {
-            deleteUnUsedFile(finalUri.getPath(),file);
+            // commenting this line to check if the file not deleted everytime after creation
+            //deleteUnUsedFile(finalUri.getPath(),file);
             Toast.makeText(CamreaView.this, "No Points to save.", Toast.LENGTH_SHORT).show();
         }
 
     }
     private class MyReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context arg0, Intent arg1) {
             // TODO Auto-generated method stub
-
             //Log.d("BroadcastReceiver", "onReceive:");
             // Bundle bundle = getIntent().getExtras().getBundle("LatLngBundle");
-
-
             //bundle = arg1.getBundleExtra("LatLngBundle");
-
             //if (bundle != null) {
               //  arrayList = bundle.getParcelableArrayList("LatLng");
                 // Log.d("BroadcastReceiver", "onReceive: array = " + arrayList);
@@ -618,7 +620,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             Label cell_name = new Label(7, row, video_name);
             Label cell_cordniate = new Label(7, row, cordniate);
             Label cell_file_audio = new Label(8, row, audio_file);
-
             try {
                 sheet.addCell(cell_user_name);
                 sheet.addCell(cell_city_name);
@@ -631,43 +632,47 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                 sheet.addCell(cell_cordniate);
                 sheet.addCell(cell_file_audio);
 
-            } catch (RowsExceededException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (WriteException e) {
-                // TODO Auto-generated catch block
+            } catch(Exception e){
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
-
-
+//            catch (RowsExceededException e) {
+//                // TODO Auto-generated catch block
+//                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                e.printStackTrace();
+//            } catch (WriteException e) {
+//                // TODO Auto-generated catch block
+//                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                e.printStackTrace();
+//            }
             wb.write();
             wb.close();
             try {
                 workbook.close();
             } catch (Exception ex) {
-
+                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
+                ex.printStackTrace();
             }
             //createExcel(excelSheet);
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-
-        } catch (BiffException e) {
-
-
-        } catch (WriteException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+
+//        } catch (BiffException e) {
+//            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//        } catch (WriteException e) {
+//            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//            e.printStackTrace();
+//        }
     }
     private void convertToAudio(File video,String file_path,File folder) {
         fFmpeg = FFmpeg.getInstance(CamreaView.this);
         ProgressDialog progress = new ProgressDialog(this);
         progress.setIndeterminate(true);
-
         //String command  = "ffmpeg -i "+video+" -vn -ar 44100 -ac 2 -ab 192k -f mp3 Sample.mp3";
         //String command  = "ffmpeg -i +"+video+" -vn -acodec copy output-audio.aac";
-
-
         //fileName = fileName + filePath.substring(i);
         //int i = path.indexOf(".");
         //fileName = fileName + path.substring(i);
@@ -676,7 +681,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         String command ="-i "+video+" -map 0:1 -acodec pcm_s16le -ac 2 "+folder + "/" + "" + file_path;
         Log.d("commamd:",command);
         String[] cmd = command.split(" ");
-
         try {
             fFmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
                 @Override
@@ -686,19 +690,16 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     progress.setMessage("Please wait...");
                     progress.show();
                 }
-
                 @Override
                 public void onProgress(String message) {
 //                    progress.setMessage(message);
                     //Log.d("FFMpeg", message);
                 }
-
                 @Override
                 public void onFailure(String message) {
                     // Log.d("FFMpeg",message);
                     progress.dismiss();
                 }
-
                 @Override
                 public void onSuccess(String message) {
 
@@ -706,16 +707,14 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     File afile= new File(folder+"/"+file_path);
                     populateChunks(jsonArray,afile);
                     progress.dismiss();
-
-
                 }
-
                 @Override
                 public void onFinish() {
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
             // Log.e("FFMpeg", "convertToAudio: " , e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
 
@@ -839,23 +838,24 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                 workbook = Workbook.createWorkbook(file, wbSettings);
                 //workbook.createSheet("Report", 0);
                 WritableSheet sheet = workbook.createSheet(sheet_name, 0);
-                Label cell_date = new Label(0, 0, "Date");
-                Label cell_time = new Label(1, 0, "Time");
-                Label cell_lattitude = new Label(2, 0, "Latitude");
-                Label cell_longitude = new Label(3, 0, "Latongitude");
-                Label cell_media = new Label(4, 0, "Media");
-                Label cell_audio_time = new Label(5, 0, "Audio Time");
-                Label cell_audio_path = new Label(6, 0, "Audio Path");
-                Label cell_text = new Label(7, 0, "text");
+                Label cell_date = new Label(0, 0, "date");
+                Label cell_time = new Label(1, 0, "time");
+                Label cell_lattitude = new Label(2, 0, "latitude");
+                Label cell_longitude = new Label(3, 0, "longitude");
+                Label cell_media = new Label(4, 0, "media time");
+//                Label cell_audio_time = new Label(5, 0, "Audio Time");
+//                Label cell_audio_path = new Label(6, 0, "Audio Path");
+//                Label cell_text = new Label(7, 0, "text");
                 try {
                     sheet.addCell(cell_date);
                     sheet.addCell(cell_time);
                     sheet.addCell(cell_lattitude);
                     sheet.addCell(cell_longitude);
                     sheet.addCell(cell_media);
-                    sheet.addCell(cell_audio_time);
-                    sheet.addCell(cell_audio_path);
-                    sheet.addCell(cell_text);
+                    // these values are required in the file
+//                    sheet.addCell(cell_audio_time);
+//                    sheet.addCell(cell_audio_path);
+//                    sheet.addCell(cell_text);
                 } catch (RowsExceededException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -863,8 +863,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
-
                 workbook.write();
                 try {
                     workbook.close();
@@ -880,11 +878,24 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             }
 
     }
+
+    /**
+     * this fxn creates a csv file for a single video
+     * @param Date date of the video recording
+     * @param time time of the video recording
+     * @param latitude latitude of the video recording
+     * @param longitude longitude of video recording
+     * @param mdeia  path
+     * @param audio_time time at which this latitude was recovered
+     * @param audio_path path of the audio
+     * @param text text extracted
+     * @param file_name name of the file
+     * @param row row no
+     */
     public void saveSubListSheet(String Date, String time, String latitude, String longitude, String mdeia,
                                  String audio_time, String audio_path, String text,
-                                 String file_name,int row )
-    {
-
+                                 String file_name,int row ) {
+        Toast.makeText(this, "adding data to excel file ", Toast.LENGTH_SHORT).show();
         String Fnamexls = file_name + ".xls";
         File sdCard = Environment.getExternalStorageDirectory();
         File directory = new File(sdCard.getAbsolutePath() + "/RouteApp");
@@ -903,46 +914,49 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             Label cell_time = new Label(1, row, time);
             Label cell_latitude = new Label(2, row, latitude);
             Label cell_longitude = new Label(3, row, longitude);
-            Label cell_mdeia = new Label(4, row, mdeia);
-            Label cell_audio_time = new Label(5, row, audio_time);
-            Label cell_audio_path = new Label(6, row, audio_path);
-            Label cell_audio_text = new Label(7, row, text);
-
+            //getting formatted time
+            String formattedMediaTime = convertNumberIntoTimeFormat(row);
+            Label cell_mdeia = new Label(4, row, formattedMediaTime);
+//            Label cell_mdeia = new Label(4, row, mdeia);
+//            Label cell_audio_time = new Label(5, row, audio_time);
+//            Label cell_audio_path = new Label(6, row, audio_path);
+//            Label cell_audio_text = new Label(7, row, text);
             try {
                 sheet.addCell(cell_date);
                 sheet.addCell(cell_time);
                 sheet.addCell(cell_latitude);
                 sheet.addCell(cell_longitude);
                 sheet.addCell(cell_mdeia);
-                sheet.addCell(cell_audio_time);
-                sheet.addCell(cell_audio_path);
-                sheet.addCell(cell_audio_text);
-
+//                sheet.addCell(cell_audio_time);
+//                sheet.addCell(cell_audio_path);
+//                sheet.addCell(cell_audio_text);s
             } catch (RowsExceededException e) {
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (WriteException e) {
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
-
             wb.write();
             wb.close();
+            Toast.makeText(this, "closing the workbook ", Toast.LENGTH_SHORT);
             try {
                 workbook.close();
             } catch (Exception ex) {
-
+                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
+                ex.printStackTrace();
             }
             //createExcel(excelSheet);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         } catch (BiffException e) {
-
-
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         } catch (WriteException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
@@ -1046,5 +1060,38 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         String formattedDate = df.format(c);
         today_date=formattedDate;
         return today_date;
+    }
+
+    /**
+     * this fxn takes a string number and retun it in time format
+     * if the number is 62 it will return it like 00:01:02
+     * @param num string number
+     */
+    public String convertNumberIntoTimeFormat(int num){
+        // calculate no of hours from seconds
+        int hours = num/3600;
+        int remaningHours = num%3600;
+        int minutes = remaningHours/60;
+        int seconds = remaningHours%60;
+        String formattedHours = String.format("%02d", hours);
+        String formattedSeconds = String.format("%02d", seconds);
+        String formattedMinutes = String.format("%02d", minutes);
+        return formattedHours+":"+formattedMinutes+":"+formattedSeconds;
+    }
+
+
+    /**
+     * this fxn updates the csv file
+     * @param coordinates coordintes to add in csv file
+     * @param fileName filename
+     */
+    public void updateCsvFile(ArrayList<LatLng> coordinates, String fileName){
+        for(int i=0; i<coordinates.size(); i++){
+            LatLng coordinate = coordinates.get(i);
+            String latitude = String.valueOf(coordinate.getLatitude());
+            String longitude = String.valueOf(coordinate.getLongitude());
+            // calling a prebuilt function to update csv file
+            saveSubListSheet(getCurrentDate(),"0:00",latitude, longitude,"",convertNumberIntoTimeFormat(i), "","",fileName,i+1);
+        }
     }
 }
