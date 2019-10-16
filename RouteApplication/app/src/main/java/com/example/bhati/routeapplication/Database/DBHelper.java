@@ -220,7 +220,6 @@ public class DBHelper extends SQLiteOpenHelper {
             album.setRecorder_file(others);
             //album.setLatLngs(latLngs);
             //album.setLatLngs(latLngs);
-
             stringBuffer.append(album);
             // stringBuffer.append(dataModel);
             albums.add(album);

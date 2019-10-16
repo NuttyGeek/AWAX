@@ -454,7 +454,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     // after creating subexcel sheet now update the sub excel sheet
                     Toast.makeText(CamreaView.this, "Video Saved !", Toast.LENGTH_SHORT).show();
                     updateCsvFile(arrayList, video_file.getName());
-                    //storeDataInDb(finalUri, file, size, name,audio_file_path);
+                    storeDataInDb(finalUri, file, size, name,audio_file_path);
                 }
             });
 
@@ -555,7 +555,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                 e.printStackTrace();
             }
             return null;
-
         }
         return null;
     }
@@ -631,7 +630,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                 sheet.addCell(cell_file_audio);
 
             } catch(Exception e){
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
 //            catch (RowsExceededException e) {

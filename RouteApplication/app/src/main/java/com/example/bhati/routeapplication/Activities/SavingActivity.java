@@ -193,7 +193,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 //endregion
         setContentView(R.layout.activity_saving);
-
         // creating frames helper
         framesHelper = new FramesHelper(this);
         framesButton = findViewById(R.id.framesButton);

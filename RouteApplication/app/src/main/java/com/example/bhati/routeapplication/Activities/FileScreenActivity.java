@@ -41,7 +41,7 @@ public class FileScreenActivity extends AppCompatActivity {
 
         albumList = new ArrayList<>();
         sizeList = new ArrayList<>();
-
+        // getting all files from db
         albumList = myDb.getAllData();
         Cursor cursor = myDb.getAllSize();
         total_size = 0;
@@ -51,7 +51,6 @@ public class FileScreenActivity extends AppCompatActivity {
             a  = a.replace(" MB","");
             sizeList.add(a);
         }
-////
         for (int i = 0 ; i< sizeList.size() ; i++)
         {
            total_size = total_size + Double.parseDouble(sizeList.get(i));
@@ -67,7 +66,6 @@ public class FileScreenActivity extends AppCompatActivity {
             return;
         }
         adapter = new AlbumAdapter(this, albumList);
-
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());

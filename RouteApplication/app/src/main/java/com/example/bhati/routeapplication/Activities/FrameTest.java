@@ -5,11 +5,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
-
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
@@ -19,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.bhati.routeapplication.Interface.GotLabels;
 import com.example.bhati.routeapplication.Interface.OnFrameExtracted;
 import com.example.bhati.routeapplication.Pojo.FramesResult;
@@ -49,7 +46,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -119,7 +115,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         videoName = helper.getVideoName();
         Log.v("log_vid", "Video Name: "+videoName);
         answerText.setText("Please wait.. Analyzing the Video !");
-
+        // doing config for the chart
         chart.setDrawBarShadow(false);
         chart.setMaxVisibleValueCount(100);
         frameChart.setDrawBarShadow(false);
@@ -225,6 +221,9 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
     }
 
 
+    /**
+     * old function not working right now
+     */
     public void uploadButtonAction(){
         try{
             Toast.makeText(FrameTest.this, "Analyzing Frames", Toast.LENGTH_SHORT).show();
