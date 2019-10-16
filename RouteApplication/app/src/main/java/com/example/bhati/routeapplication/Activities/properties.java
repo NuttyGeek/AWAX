@@ -28,4 +28,6 @@ public class properties
     public static String email = "admin@admin.com";
     public static String password = "adminadmin";
 
+    public static String webViewUrl = "http://geovisuals.cs.kent.edu/";
+
 }

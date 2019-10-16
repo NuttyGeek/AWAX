@@ -72,6 +72,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -1114,7 +1115,9 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
     public ArrayList<String> getTimeList(int size){
         ArrayList<String> resultList = new ArrayList<>();
         long current_time = System.currentTimeMillis();
-        long time_in_secs = (int) (current_time/1000);
+        // calculating offset time based on the local timezone
+        int offset = TimeZone.getDefault().getOffset(current_time);
+        long time_in_secs = (int) (offset/1000);
         for(int i=0; i<size; i++){
             String formattedTime = convertNumberIntoTimeFormat(time_in_secs);
             resultList.add(formattedTime);

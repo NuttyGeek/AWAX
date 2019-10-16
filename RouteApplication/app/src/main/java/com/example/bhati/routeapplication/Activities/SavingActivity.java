@@ -313,21 +313,17 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
         btnUpload.setOnClickListener(v -> {
-
-
-
+            /// opening the webview
+            startActivity(new Intent(this, WebViewActivity.class));
             /*Toast.makeText(SavingActivity.this, "file is"+filePath, Toast.LENGTH_SHORT).show();
-
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enter Server Ip:");
-
 // Set up the input
             final EditText input = new EditText(this);
 // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
             builder.setCancelable(false);
-
 // Set up the buttons
             builder.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
                 @Override
@@ -361,9 +357,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     dialog.cancel();
                 }
             });
-
             builder.show();*/
-
         });
 
 
