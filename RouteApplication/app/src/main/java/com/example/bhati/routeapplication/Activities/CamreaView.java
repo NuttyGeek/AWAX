@@ -144,6 +144,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                 LatLng l1 = new LatLng();
                 l1.setLatitude(properties.loclat);
                 l1.setLongitude(properties.loclog);
+                // why is this happening
                 arrayList.add(l1);
 
                 //properties.loclat= gpsloc.getLatitude();
@@ -451,8 +452,9 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     final String audio_file_path = vfile + ".wav";
                     CreatSubExcelSheet(video_file.getName());
                     // after creating subexcel sheet now update the sub excel sheet
+                    Toast.makeText(CamreaView.this, "Video Saved !", Toast.LENGTH_SHORT).show();
                     updateCsvFile(arrayList, video_file.getName());
-                    storeDataInDb(finalUri, file, size, name,audio_file_path);
+                    //storeDataInDb(finalUri, file, size, name,audio_file_path);
                 }
             });
 
@@ -1093,7 +1095,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         if(coordinates!=null && coordinates.size()>0){
             ArrayList<String> timeList = getTimeList(coordinates.size());
 
-            for(int i=0; i<coordinates.size(); i++){
+            for(int i=0; i<timeList.size(); i++){
                 LatLng coordinate = coordinates.get(i);
                 String latitude = String.valueOf(coordinate.getLatitude());
                 String longitude = String.valueOf(coordinate.getLongitude());
