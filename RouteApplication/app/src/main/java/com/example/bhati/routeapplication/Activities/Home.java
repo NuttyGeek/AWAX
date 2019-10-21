@@ -1,7 +1,6 @@
 package com.example.bhati.routeapplication.Activities;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -47,7 +46,7 @@ import com.example.bhati.routeapplication.Model.GPSTracker;
 import com.example.bhati.routeapplication.Model.LatLngInterpolator;
 import com.example.bhati.routeapplication.Model.MarkerAnimation;
 import com.example.bhati.routeapplication.R;
-import com.example.bhati.routeapplication.Servicess.background_location_updates;
+import com.example.bhati.routeapplication.Services.background_location_updates;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;

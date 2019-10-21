@@ -16,24 +16,20 @@ import jxl.Image;
 
 public class SharedPrefHelper {
 
-    Context context;
-    String sharedPrefFileName = "object_detection_json_data";
-    SharedPreferences prefs;
-    public String FRAMES_EXTRACTED = "frames_extracted";
-    public String FRAMES_PROCESSED = "frames_processed";
+    private Context context;
+    //String sharedPrefFileName = "object_detection_json_data";
+    private SharedPreferences prefs;
+    public static String ARE_FRAMES_EXTRACTED_KEY = "frames_extracted";
+    public static String TOTAL_FRAMES_KEY = "total_frames";
+    public static String ARE_FRAMES_UPLOADED_KEY = "are_frames_uploaded";
+    public static String IS_RESULT_AVAILABLE_KEY = "is_result_available";
+    public static String RESULT = "object_detection_result";
 
-    public SharedPrefHelper(Context context){
+
+    // constructor
+    public SharedPrefHelper(Context context, String videoName){
         this.context = context;
-        prefs = context.getSharedPreferences(sharedPrefFileName, Context.MODE_PRIVATE);
-    }
-
-    /**
-     * this fxn create shared pref with the name given
-     * @param videoName video name
-     * @return
-     */
-    public SharedPreferences createSharedPref(String videoName){
-        return context.getSharedPreferences(videoName, Context.MODE_PRIVATE);
+        prefs = context.getSharedPreferences(videoName, Context.MODE_PRIVATE);
     }
 
 
@@ -45,7 +41,7 @@ public class SharedPrefHelper {
     public void saveString(String key, String value){
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(key, value);
-        editor.apply();
+        editor.commit();
     }
 
     /**
@@ -81,51 +77,41 @@ public class SharedPrefHelper {
     }
 
     /**
-     * this fxn tells if the frames are processed or not
-     * @return
+     * this function saves int value in the shared pref
+     * @param key key of the value ssaved
+     * @param value int value saved in shared pref
      */
-    public boolean areFramesProcessed(){
-        return getBoolean(FRAMES_PROCESSED);
-    }
-
-    /**
-     * save the object detection result in the shared pref using the key as video name
-     * @param videoName video name
-     * @param result ImageDetecttionResult object
-     */
-    public void saveObjectDetectionData(String videoName, ImageDetectionResult result){
-        // here we have to add correct labels beofre saving it to local storage
-//        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
-//        for(Map.Entry<String, ArrayList<ImageLabel>> entry: map.entrySet()){
-//            entry.
-//        }
-
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(result);
-        Log.v("nuttygeeek_json", "Saving Json response in db: "+result.getFrameDataMap().toString());
-        SharedPreferences videoPref = context.getSharedPreferences(sharedPrefFileName, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = videoPref.edit();
-        editor.putString(videoName, jsonString);
+    public void saveInt(String key, int value){
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(key, value);
         editor.commit();
     }
 
 
     /**
-     * this fxn returns the Object Detecttion Data from the shared pref
-     * @param videoName video name
-     * @return Image Detecttion Results
+     * this fxn returns a int value from shared pref file
+     * @param key key of the value
+     * @return int value
      */
-    public ImageDetectionResult getObjectDetectionData(String videoName){
-        SharedPreferences videoPref = context.getSharedPreferences(sharedPrefFileName, Context.MODE_PRIVATE);
-        String jsonString = videoPref.getString(videoName, null);
-        if(jsonString!=null){
-            Gson gson = new Gson();
-            ImageDetectionResult result = gson.fromJson(jsonString, ImageDetectionResult.class);
-            return result;
-        }else{
-            return  null;
-        }
+    public int getInt(String key){
+        int defaultValue = -1;
+        return prefs.getInt(key, defaultValue);
+    }
 
+    /**
+     * this fxn saves result as a string
+     * @param resultString result string from server
+     */
+    public void saveResult(String resultString){
+        saveString("result", resultString);
+        saveBoolean(SharedPrefHelper.IS_RESULT_AVAILABLE_KEY, true);
+    }
+
+    /**
+     * this fxn returns the result as a string
+     */
+    public String getResult(){
+        return getString("result");
     }
 
 }

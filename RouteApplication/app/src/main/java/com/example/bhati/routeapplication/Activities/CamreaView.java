@@ -11,21 +11,16 @@ import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.location.Address;
 import android.location.Geocoder;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
 import android.media.CamcorderProfile;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaRecorder;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -43,8 +38,8 @@ import android.widget.VideoView;
 import com.example.bhati.routeapplication.Database.DBHelper;
 import com.example.bhati.routeapplication.Model.GPSTracker;
 import com.example.bhati.routeapplication.R;
-import com.example.bhati.routeapplication.Servicess.background_location_updates;
-import com.example.bhati.routeapplication.Testing.Test;
+import com.example.bhati.routeapplication.Services.FrameUploadService;
+import com.example.bhati.routeapplication.Services.background_location_updates;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
@@ -56,14 +51,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,8 +73,8 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 
-import static com.example.bhati.routeapplication.Servicess.background_location_updates.Latitude;
-import static com.example.bhati.routeapplication.Servicess.background_location_updates.Longitude;
+import static com.example.bhati.routeapplication.Services.background_location_updates.Latitude;
+import static com.example.bhati.routeapplication.Services.background_location_updates.Longitude;
 
 public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Callback {
     private SurfaceHolder surfaceHolder;
@@ -304,12 +292,10 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         super.onResume();
     }
 
-    public void IntialValues()
-    {
+    public void IntialValues() {
         preferences = getSharedPreferences("isVideoCapturing", MODE_PRIVATE);
     }
-    public void setUiWidgets()
-    {
+    public void setUiWidgets() {
         mCamera = Camera.open();
         recorder_timer=findViewById(R.id.recorder_timer);
         surfaceView = (SurfaceView) findViewById(R.id.surface_camera);
@@ -368,7 +354,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                         editor.apply();
                         startRecording();
                     }*/
-
                 }
                 catch (IOException e)
                 {
@@ -446,13 +431,14 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                         username.setError("Required field");
                         return;
                     }
-
                     dialogUsername.dismiss();
                     final long currentTimeMillis = System.currentTimeMillis();
                     final String audio_file_path = vfile + ".wav";
                     CreatSubExcelSheet(video_file.getName());
                     storeDataInDb(finalUri, file, size, name,audio_file_path);
 
+                    //TODO: START THE SERVICE
+                    FrameUploadService.startActionExtracting(getApplicationContext(), finalUri);
                 }
             });
 
@@ -1037,7 +1023,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             }
         }, 0, 1000);
     }
-    public String  getCurrentDate()
+    public String getCurrentDate()
     {
         String today_date=null;
         Date c = Calendar.getInstance().getTime();

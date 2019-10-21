@@ -3,6 +3,7 @@ package com.example.bhati.routeapplication.Activities;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -22,11 +23,13 @@ import android.widget.Toast;
 
 import com.example.bhati.routeapplication.Interface.GotLabels;
 import com.example.bhati.routeapplication.Interface.OnFrameExtracted;
+import com.example.bhati.routeapplication.Model.LabelPOJO;
 import com.example.bhati.routeapplication.Pojo.FramesResult;
 import com.example.bhati.routeapplication.Pojo.ImageDetectionResult;
 import com.example.bhati.routeapplication.Pojo.ImageLabel;
 import com.example.bhati.routeapplication.Pojo.UniqueLabelData;
 import com.example.bhati.routeapplication.R;
+import com.example.bhati.routeapplication.Services.FrameUploadService;
 import com.example.bhati.routeapplication.helpers.FramesHelper;
 import com.example.bhati.routeapplication.helpers.SharedPrefHelper;
 import com.github.mikephil.charting.charts.BarChart;
@@ -37,6 +40,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
@@ -50,8 +54,15 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -74,19 +85,21 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
     String videoName;
     Polyline polyline;
     ImageView frameImage;
+    TextView loadingText;
     // list of points in main polyline
     ArrayList<LatLng> mainPolylinePoints;
     int progressValue;
-    ImageDetectionResult imageDetectionResult;
+    // ImageDetectionResult imageDetectionResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_frame_test);
 
-        prefHelp = new SharedPrefHelper(this);
+        //TODO: prefHelp = new SharedPrefHelper(getApplicationContext());
 
         // init UI
+        loadingText = findViewById(R.id.loading_text);
         image = findViewById(R.id.image);
         loading = findViewById(R.id.loading);
         answerText = findViewById(R.id.answer);
@@ -107,16 +120,51 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
         // init helpers
         helper = new FramesHelper(this);
-        imageDetectionResult = null;
+        // imageDetectionResult = null;
+
         // getting values from intent
         Intent i = getIntent();
         videoUri = i.getStringExtra("videoUri");
-        mainPolylinePoints = (ArrayList<LatLng>) i.getSerializableExtra("list");
-        Log.v("nuttygeek_poly", "polylines coordinates: "+mainPolylinePoints.toString());
-        Log.v("nuttygeek", videoUri);
+        // set the video path in helper
         helper.setVideoPath(videoUri);
         // right, after setting video path, get the video name
         videoName = helper.getVideoName();
+        //region frames service code
+        if(isResultStored()){
+            // show the graph & other stuff
+            Log.v("nuttygeek_service", "Result is stored in shared pref");
+            // get result from shared pref
+            String result = getresultFromSharedPref();
+            HashMap<String, Double> map = getAggregateResultFromResultString(result);
+            // draw graph from aggregate result
+            drawOverAllChart(map);
+        }else{
+            // check if images are uploaded
+            if(areFramesUploaded()){
+                Log.v("nuttygeek_service", "Frames are already uploaded, do you work & show the graph");
+                // now we just have to get results from server
+                FrameUploadService.startActionGetResults(getApplicationContext(), Uri.parse(this.videoUri));
+            }else{
+                // check if frames are extracted or not
+                if(areFramesExtracted()){
+                    Toast.makeText(this, "Frames are already extracted !", Toast.LENGTH_SHORT).show();
+                    Log.v("nuttygeek_service", "Frames are already extracted !");
+                    // check if frames are uploaded
+                    Log.v("nuttygeek_service", "Frames are not uploaded ");
+                    // upload frames
+                    FrameUploadService.startActionUploading(getApplicationContext(),Uri.parse(this.videoUri));
+                }else{
+                    // frames are not extracted nor uploaded, neither got the result from server
+                    Toast.makeText(this, "Frames are not extracted from the video ", Toast.LENGTH_SHORT).show();
+                    Log.v("nuttygeek_service", "frames are not extracted yet");
+                }
+            }
+        }
+        //endregion
+
+        mainPolylinePoints = (ArrayList<LatLng>) i.getSerializableExtra("list");
+        Log.v("nuttygeek_poly", "polylines coordinates: "+mainPolylinePoints.toString());
+        Log.v("nuttygeek", videoUri);
         Log.v("nuttygeek_vid", "Video Name: "+videoName);
         answerText.setText("Please wait.. Analyzing the Video !");
 
@@ -124,49 +172,6 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         chart.setMaxVisibleValueCount(100);
         frameChart.setDrawBarShadow(false);
         frameChart.setMaxVisibleValueCount(100);
-
-        //region testing
-//        ImageLabel imgLabel = helper.getDesiredLabelObjectFromSimpleImageLabel(new ImageLabel("asd", "Pony car", 0.56f));
-//        if(imgLabel!=null){
-//            Log.v("nuttygeek_allowed_label", imgLabel.getName());
-//        }else{
-//            Log.v("nuttygeek_allowed_label", "IMage Label is not allowed, we don'' need to add it in the calculation ");
-//        }
-        //endregion
-
-        // if data is already present in shared pref don't do any processing
-        imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
-        Log.v("nuttygeek_oncreate", "Image Detection Object: "+new Gson().toJson(imageDetectionResult));
-        if(imageDetectionResult != null){
-            Log.v("nuttygeek_oncreate", "Shared Pref Already have the data no need to do anything ");
-            // trying to test if the new res with new labels have some values 
-            ImageDetectionResult newRes = helper.getNewImageDetectionResultFromOld(imageDetectionResult);
-            Log.v("nuttygeek_new_detection", newRes.toString());
-            // put markers on map
-            // -- get timestamps
-            helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
-            // convert list of timestamps into list of LatLng Objects
-//            ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
-            // we will draw the marker on map ready fxn
-            // hiding the loading view
-            loadingView.setVisibility(View.GONE);
-            // hide the single frame chart
-            frameChart.setVisibility(View.GONE);
-
-        }else{
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // updating progress
-                    extractButtonClickAction();
-                    //uploadButtonAction();
-                    loading.setVisibility(View.GONE);
-                    // hide the single frame chart
-                    frameChart.setVisibility(View.GONE);
-//                answerText.setVisibility(View.GONE);
-                }
-            }, 1000);
-        }
 
         //endregion
 
@@ -224,131 +229,81 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         mapView.onSaveInstanceState(outState);
     }
 
-
-    public void uploadButtonAction(){
-        try{
-            Toast.makeText(FrameTest.this, "Analyzing Frames", Toast.LENGTH_SHORT).show();
-            int max = 15000;
-            int min = 7000;
-            final int random = new Random().nextInt((max - min) + 1) + min;
-            Thread.sleep(random);
-            Toast.makeText(FrameTest.this, "Done Processing Frames!", Toast.LENGTH_SHORT).show();
-
-            FramesResult res = helper.getFramesData();
-            String ans_str = " Car: "+res.getCar() + "\n"
-                    +" Vegetation: "+res.getVegetation()+"\n"
-                    +" Person: "+res.getPerson()+ "\n"
-                    +" Snapshot: "+res.getSnpashot();
-            //answerText.setText(ans_str);
-
-            ArrayList<BarEntry> entries = new ArrayList<>();
-            entries.add(new BarEntry(1, Float.parseFloat(res.getCar())*100));
-            entries.add(new BarEntry(2, Float.parseFloat(res.getVegetation())*100));
-            entries.add(new BarEntry(3, Float.parseFloat(res.getPerson())*100));
-            entries.add(new BarEntry(4, Float.parseFloat(res.getSnpashot())*100));
-
-
-            BarDataSet set = new BarDataSet(entries, "Values");
-            set.setColors(ColorTemplate.COLORFUL_COLORS);
-            BarData data = new BarData(set);
-            data.setBarWidth(0.4f);
-
-            // customizing the x-axis labels
-            labelsStringArray = new String[]{
-                    "","Car","Vegetation", "People", "Snapshot"
-            };
-
-            chart.setData(data);
-            XAxis xAxis = chart.getXAxis();
-            xAxis.setValueFormatter(new IndexAxisValueFormatter(labelsStringArray));
-            xAxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
-            xAxis.setGranularity(1);
-            xAxis.setAxisMinimum(1);
-            chart.notifyDataSetChanged();
-            chart.invalidate();
-
-            // do the chart population
-
-        }catch (Exception e){
-            Toast.makeText(FrameTest.this, "", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     /**
      * extract the frames and detect objects
      */
-    public void extractButtonClickAction(){
-        ArrayList<String> ansStrs = new ArrayList<>();
-        // extract all images
-        helper.extractAllFrames(new OnFrameExtracted() {
-            @Override
-            public void onFrameExtractionCompleted() {
-                Toast.makeText(FrameTest.this, "All Frames Extracted !", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void getExtractedFrameCount(int count) {
-                Log.v("nuttygeek_count", count+ "th frame extracted !");
-                incrementProgress();
-            }
-
-            @Override
-            public void getTotalFramesCount(int count) {
-                Log.v("nuttygeek_count", "Total no of frames to be extracted: "+count);
-                setMaxValueForProgressBar(count*2);
-            }
-        });
-        // process all images
-        helper.processAllImagesForLabeling(new GotLabels(){
-            @Override
-            public void gotLabelsSuccess(String videoName, String frameName, ArrayList<ImageLabel> labels) {
-                ArrayList<ImageLabel> desiredLabels = new ArrayList<>();
-                // filter the labels here, only add those labels which we want to add
-
-                // init the ImageDetectionResult Object
-                if(imageDetectionResult == null){
-                    imageDetectionResult = new ImageDetectionResult(videoName);
-                    Log.v("nuttygeek_result", "image Detection result no initialized , intialized it !");
-                }
-                // hiding the loading view
-                loadingView.setVisibility(View.GONE);
-                // adding the labels to the image detection result object
-                imageDetectionResult.appendImageLabels(frameName, labels);
-                // increment the progress
-                incrementProgress();
-                Log.v("nuttygeek_od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
-            }
-
-            @Override
-            public void gotLabelsFailure(String error) {
-                Toast.makeText(FrameTest.this, "Error Processing Frames!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void gotLabelsCompleted(String videoName) {
-                // save the whole object in Shared Pref
-                Toast.makeText(FrameTest.this, "Got All the images processed !", Toast.LENGTH_SHORT).show();
-                Log.v("nuttygeek_completed", "Image Detection Obj after completion: "+new Gson().toJson(imageDetectionResult));
-                prefHelp.saveObjectDetectionData(videoName, imageDetectionResult);
-                // now try to get the value from Shared Pref
-                imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
-                Log.v("nuttygeek_sp", "\nShared Pref: "+new Gson().toJson(imageDetectionResult));
-                // creating time stamp map
-                helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
-                // getting coordinates
-                ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
-                // drawing markers on map
-                drawMarkersOnMap(framePoints);
-            }
-
-            @Override
-            public void getProcessedFramesCount(int count) {
-                Log.v("nuttygeek_count", count+"th frame processed");
-                incrementProgress();
-            }
-        });
-
-    }
+//    public void extractButtonClickAction(){
+//        ArrayList<String> ansStrs = new ArrayList<>();
+//        // extract all images
+//        helper.extractAllFrames(new OnFrameExtracted() {
+//            @Override
+//            public void onFrameExtractionCompleted() {
+//                Toast.makeText(FrameTest.this, "All Frames Extracted !", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void getExtractedFrameCount(int count) {
+//                Log.v("nuttygeek_count", count+ "th frame extracted !");
+//                incrementProgress();
+//            }
+//
+//            @Override
+//            public void getTotalFramesCount(int count) {
+//                Log.v("nuttygeek_count", "Total no of frames to be extracted: "+count);
+//                setMaxValueForProgressBar(count*2);
+//            }
+//        });
+//        // process all images
+//        helper.processAllImagesForLabeling(new GotLabels(){
+//            @Override
+//            public void gotLabelsSuccess(String videoName, String frameName, ArrayList<ImageLabel> labels) {
+//                ArrayList<ImageLabel> desiredLabels = new ArrayList<>();
+//                // filter the labels here, only add those labels which we want to add
+//
+//                // init the ImageDetectionResult Object
+//                if(imageDetectionResult == null){
+//                    imageDetectionResult = new ImageDetectionResult(videoName);
+//                    Log.v("nuttygeek_result", "image Detection result no initialized , intialized it !");
+//                }
+//                // hiding the loading view
+//                loadingView.setVisibility(View.GONE);
+//                // adding the labels to the image detection result object
+//                imageDetectionResult.appendImageLabels(frameName, labels);
+//                // increment the progress
+//                incrementProgress();
+//                Log.v("nuttygeek_od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
+//            }
+//
+//            @Override
+//            public void gotLabelsFailure(String error) {
+//                Toast.makeText(FrameTest.this, "Error Processing Frames!", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void gotLabelsCompleted(String videoName) {
+//                // save the whole object in Shared Pref
+//                Toast.makeText(FrameTest.this, "Got All the images processed !", Toast.LENGTH_SHORT).show();
+//                Log.v("nuttygeek_completed", "Image Detection Obj after completion: "+new Gson().toJson(imageDetectionResult));
+//                //TODO: prefHelp.saveObjectDetectionData(videoName, imageDetectionResult);
+//                // now try to get the value from Shared Pref
+//                //TODO: imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
+//                Log.v("nuttygeek_sp", "\nShared Pref: "+new Gson().toJson(imageDetectionResult));
+//                // creating time stamp map
+//                helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
+//                // getting coordinates
+//                ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
+//                // drawing markers on map
+//                drawMarkersOnMap(framePoints);
+//            }
+//
+//            @Override
+//            public void getProcessedFramesCount(int count) {
+//                Log.v("nuttygeek_count", count+"th frame processed");
+//                incrementProgress();
+//            }
+//        });
+//
+//    }
 
     /**
      * increments the progress value by 1
@@ -383,10 +338,9 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         // move the camera to show the polyline
         setMapCamera(mainPolylinePoints.get(0));
         // if we have the result for image detection draw the markers on the map
-        if(imageDetectionResult!=null){
-            ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
-            drawMarkersOnMap(framePoints);
-        }
+        // draw it anyways
+        ArrayList<LatLng> framePoints = helper.getCoordinatesFromTimeLocationMap();
+        drawMarkersOnMap(framePoints);
     }
 
 
@@ -400,7 +354,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 .color(Color.GREEN)
                 .alpha(1f)
                 .addAll(points));
-        Toast.makeText(this, "Drawn the polyline !", Toast.LENGTH_SHORT).show();
+        // Toast.makeText(this, "Drawn the polyline !", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -440,8 +394,8 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         .title("Last Point")
         .setIcon(iconFactory.fromResource(R.drawable.marker_blue))
         );
-        drawChartData();
-        //testDrawMap();
+        //TODO: draw chart data based on the new result
+        //drawChartData();
         map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
@@ -450,17 +404,10 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 // get the frame no on click
                 Log.v("nuttygeek_marker", "Position: "+marker.getPosition().toString());
                 String frameName = helper.getFrameNameFromLocation(marker.getPosition());
-                ArrayList<ImageLabel> labels =  helper.getImageLabelsFromFrameName(frameName, imageDetectionResult);
-                String str = "";
-                if (labels != null) {
-                    for(ImageLabel label: labels){
-                        str += "\n"+label.getName()+" : "+label.getScore();
-                    }
-                    marker.setSnippet(str);
-                }
                 // hide the overall chart
                 chart.setVisibility(View.GONE);
-                showSingleFrameMap(marker.getPosition());
+                //TODO: show single frame chart according to new result
+                // showSingleFrameMap(marker.getPosition());
                 // now show the image related to this marker
                 String absPath = helper.getAbsolutePathOfImageFromFrameName(frameName);
                 frameImage.setImageBitmap(BitmapFactory.decodeFile(absPath));
@@ -475,7 +422,9 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
      * this fxn draw the chart data
      */
     public void drawChartData(){
-        HashMap<String, UniqueLabelData> chartData = helper.getChartData(imageDetectionResult);
+        //HashMap<String, UniqueLabelData> chartData = helper.getChartData(imageDetectionResult);
+        // just for now
+        HashMap<String, UniqueLabelData> chartData = helper.getChartData(null);
         ArrayList<BarEntry> entries = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
         ArrayList<Float> valueList = new ArrayList<>();
@@ -513,71 +462,148 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         chart.invalidate();
     }
 
+
     /**
-     * this fxn hides the overall and shows the single frame map according to the marker clicked on
-     * @param position location of the marker clicked on
+     * this fxn draws the aggreate chart data
+     * @param map Hashmap containing all the values
      */
-    public void showSingleFrameMap(LatLng position){
-        // hide the overall frame
-        frameChart.setVisibility(View.VISIBLE);
-        // get frame data to show on map from this lat lng point
-        String frameName = helper.getFrameNameFromLocation(position);
-        Log.v("nuttygeek_single", "Frame Name: "+frameName);
-        ArrayList<ImageLabel> labelList = imageDetectionResult.getFrameDataMap().get(frameName);
-        // show it on map with iteration over labels
+    public void drawOverAllChart(HashMap<String, Double> map){
+        // entries for bar chart
         ArrayList<BarEntry> entries = new ArrayList<>();
-        ArrayList<String> labels = new ArrayList<>();
-        for(ImageLabel label: labelList){
-            Log.v("nuttygeek_single_label", label.getName()+" : "+label.getScore());
-            labels.add(label.getName());
-            entries.add(new BarEntry(labelList.indexOf(label), label.getScore()));
+        // creating list of lables & values
+        ArrayList<String> labelsList = new ArrayList<>();
+        ArrayList<Double> valuesList = new ArrayList<>();
+        for(HashMap.Entry<String, Double> entry: map.entrySet()){
+            labelsList.add(entry.getKey());
+            valuesList.add(entry.getValue());
         }
+        // updating entries array
+       for(int i=0; i<valuesList.size(); i++){
+           entries.add(new BarEntry(i,valuesList.get(i).floatValue()));
+       }
         BarDataSet set = new BarDataSet(entries,"Labels" );
         set.setColors(ColorTemplate.COLORFUL_COLORS);
-        XAxis xaxis = frameChart.getXAxis();
+        XAxis xaxis = chart.getXAxis();
         xaxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xaxis.setDrawGridLines(false);
-        xaxis.setGranularity(1);
         xaxis.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                if(value<0){
-                    return "";
-                }else{
-                    int index = (int) value;
-                    return labels.get(index);
-                }
+                int index = (int) value;
+                return labelsList.get(index);
             }
         });
         BarData data = new BarData(set);
         data.setBarWidth(0.9f);
-        frameChart.setData(data);
-        frameChart.setFitBars(true);
-        frameChart.invalidate();
-
+        chart.setData(data);
+        chart.setFitBars(true);
+        chart.invalidate();
     }
 
-//    /**
-//     * this fxn is for testing image detection result allowed labels
-//     * @param result result got from the image detection
-//     */
-//    public void testAllowedLabels(ImageDetectionResult result){
-//        Log.v("nuttygeek_detect_result", "\n"+result.toString()+"\n");
-//        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
-//        for(Map.Entry<String, ArrayList<ImageLabel>> entry: map.entrySet()){
-//            ArrayList<ImageLabel> labels = entry.getValue();
-//            for(ImageLabel label: labels){
-//                ImageLabel newLabel = helper.getDesiredLabelObjectFromSimpleImageLabel(label);
-//                if(newLabel != null){
-//                    Log.v("nuttygeek_new_label", "Label: "+newLabel.getName());
+    /**
+     * this fxn hides the overall and shows the single frame map according to the marker clicked on
+     * @param position location of the marker clicked on
+     */
+//    public void showSingleFrameMap(LatLng position){
+//        // hide the overall frame
+//        frameChart.setVisibility(View.VISIBLE);
+//        // get frame data to show on map from this lat lng point
+//        String frameName = helper.getFrameNameFromLocation(position);
+//        Log.v("nuttygeek_single", "Frame Name: "+frameName);
+//        ArrayList<ImageLabel> labelList = imageDetectionResult.getFrameDataMap().get(frameName);
+//        // show it on map with iteration over labels
+//        ArrayList<BarEntry> entries = new ArrayList<>();
+//        ArrayList<String> labels = new ArrayList<>();
+//        for(ImageLabel label: labelList){
+//            Log.v("nuttygeek_single_label", label.getName()+" : "+label.getScore());
+//            labels.add(label.getName());
+//            entries.add(new BarEntry(labelList.indexOf(label), label.getScore()));
+//        }
+//        BarDataSet set = new BarDataSet(entries,"Labels" );
+//        set.setColors(ColorTemplate.COLORFUL_COLORS);
+//        XAxis xaxis = frameChart.getXAxis();
+//        xaxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+//        xaxis.setDrawGridLines(false);
+//        xaxis.setGranularity(1);
+//        xaxis.setValueFormatter(new ValueFormatter() {
+//            @Override
+//            public String getFormattedValue(float value) {
+//                if(value<0){
+//                    return "";
 //                }else{
-//                    Log.v("nuttygeek_new_label", "Label: null");
+//                    int index = (int) value;
+//                    return labels.get(index);
 //                }
 //            }
-//        }
-//        Log.v("nuttygeek_detect_result", "\n"+result.toString()+"\n");
+//        });
+//        BarData data = new BarData(set);
+//        data.setBarWidth(0.9f);
+//        frameChart.setData(data);
+//        frameChart.setFitBars(true);
+//        frameChart.invalidate();
+//
 //    }
 
+    /**
+     * this fxn returns the value from shared pref
+     * @return true/false
+     */
+    public boolean areFramesExtracted(){
+        SharedPrefHelper prefHelper = new SharedPrefHelper(this, this.videoName);
+        boolean result = prefHelper.getBoolean(SharedPrefHelper.ARE_FRAMES_EXTRACTED_KEY);
+        return result;
+    }
+
+    /**
+     * this fxn tells if frames are uploaded to server or not
+     * @return
+     */
+    public boolean areFramesUploaded(){
+        SharedPrefHelper prefHelper = new SharedPrefHelper(this, this.videoName);
+        boolean result = prefHelper.getBoolean(SharedPrefHelper.ARE_FRAMES_UPLOADED_KEY);
+        return result;
+    }
+
+    /**
+     * this fxn tells if result is available in shared pref or not
+     * @return true/false
+     */
+    public boolean isResultStored(){
+        SharedPrefHelper prefHelper = new SharedPrefHelper(this, this.videoName);
+        boolean result = prefHelper.getBoolean(SharedPrefHelper.IS_RESULT_AVAILABLE_KEY);
+        return result;
+    }
+
+    /**
+     * this fxn returns the result string from shared pref
+     * @return result string
+     */
+    public String getresultFromSharedPref(){
+        SharedPrefHelper prefHelper = new SharedPrefHelper(this, this.videoName);
+        String result = prefHelper.getResult();
+        return result;
+    }
+
+
+    /**
+     * this fxn returns the overall Aggregate Data from the result
+     * @param result
+     * @return
+     */
+    public HashMap<String, Double> getAggregateResultFromResultString(String result){
+        HashMap<String, Double> aggregateData = new HashMap<>();
+        try{
+            JSONObject obj = new JSONObject(result);
+            JSONObject aggregateJsonObj = obj.getJSONObject("aggregate");
+            Gson g  = new Gson();
+            LabelPOJO labelObj = g.fromJson(aggregateJsonObj.toString(), LabelPOJO.class);
+            Log.v("nuttygeek_json", String.valueOf(labelObj.getBicycle()));
+            aggregateData = labelObj.getFullHashMap();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return aggregateData;
+    }
 
 }
 

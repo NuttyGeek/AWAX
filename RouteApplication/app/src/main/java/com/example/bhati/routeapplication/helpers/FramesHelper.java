@@ -55,7 +55,6 @@ public class FramesHelper {
     private int REGULAR_FRAME_INTERVAL;
     private ArrayList<Integer> timestamps;
     private int lengthOfVideo;
-    SharedPrefHelper prefHelp;
     HashMap<Integer,LatLng> timeLocationMap;
 
     public FramesHelper(Context context){
@@ -63,7 +62,6 @@ public class FramesHelper {
         this.context = context;
         metadataRetriever = new MediaMetadataRetriever();
         REGULAR_FRAME_INTERVAL = properties.REGULAR_FRAME_INTERVAL_MILLIS;
-        prefHelp = new SharedPrefHelper(context);
         timeLocationMap = new HashMap<>();
     }
 
@@ -98,12 +96,11 @@ public class FramesHelper {
      * @param time time at which the frames should be extracted
      */
     public void getFrameFromVideo(int time){
-        // getting image from video at particular image
+        // getting image from video at particular time
         Bitmap image = metadataRetriever.getFrameAtTime(time*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-//         First Image is corrupted and is not is JPEG format , so we will have neglect that first image and take in consideration
-//         other images
         String dirPath = "/RouteApp/"+getVideoFileNameFromUriWithoutExtensions(this.videoPath);
         String fileName = String.valueOf(time)+".jpg";
+        //saving image in external storage
         saveBitmapToStorage(image, dirPath, fileName);
     }
 

@@ -71,5 +71,8 @@ dependencies {
     // firebase mlkit image labeling on device
     implementation 'com.google.firebase:firebase-ml-vision:23.0.0'
     implementation 'com.google.firebase:firebase-ml-vision-image-label-model:18.0.0'
+    // retrofit for server calls
+    implementation 'com.squareup.retrofit2:retrofit:2.6.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
 }
 apply plugin: 'com.google.gms.google-services'

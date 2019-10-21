@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <ProgressBar
@@ -38,6 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:id="@+id/loading_text"
                 android:text="Please wait we are processing the video "
                 android:textAlignment="center" />
         </LinearLayout>
