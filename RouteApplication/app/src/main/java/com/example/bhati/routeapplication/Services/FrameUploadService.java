@@ -39,7 +39,7 @@ public class FrameUploadService extends IntentService {
 
     // shared pref helper object
     SharedPrefHelper prefHelper;
-    FramesHelper helper;
+    public static FramesHelper helper;
     public static FramesRestApiHelper restHelper;
     // TODO: Rename actions, choose action names that describe tasks that this
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
@@ -63,6 +63,7 @@ public class FrameUploadService extends IntentService {
     // TODO: Customize helper method
     public static void startActionExtracting(Context context, Uri videoUri) {
         // init rest helper
+        helper = new FramesHelper(context);
         restHelper = new FramesRestApiHelper(context);
         Intent intent = new Intent(context, FrameUploadService.class);
         intent.setAction(ACTION_START_EXTRACTING);
@@ -126,7 +127,7 @@ public class FrameUploadService extends IntentService {
         // TODO: extract the frames using FramesHelper class
         restHelper.extractFrames(videoUriString);
         // getting video name from a helper method
-        String videoName = helper.getVideoName();
+        String videoName = helper.getVideoName(videoUriString);
         // saving boolean value in shared pref
         prefHelper = new SharedPrefHelper(getApplicationContext(),videoName);
         prefHelper.saveBoolean(SharedPrefHelper.ARE_FRAMES_EXTRACTED_KEY, true);
@@ -145,7 +146,7 @@ public class FrameUploadService extends IntentService {
         // get list of files to upload
         helper = new FramesHelper(this);
         helper.setVideoPath(videoUriString);
-        String videoName = helper.getVideoName();
+        String videoName = helper.getVideoName(videoUriString);
         prefHelper = new SharedPrefHelper(getApplicationContext(), videoName);
         // get list of images in a folder
         ArrayList<Uri> imagesUri = helper.getAllImageUrisFromVideoFolder();
@@ -163,8 +164,8 @@ public class FrameUploadService extends IntentService {
     private void handleActionGetResults(String videoUri){
         helper = new FramesHelper(this);
         helper.setVideoPath(videoUri);
-        String videoName = helper.getVideoName();
-        prefHelper = new SharedPrefHelper(getApplicationContext(), helper.getVideoName());
+        String videoName = helper.getVideoName(videoUri);
+        prefHelper = new SharedPrefHelper(getApplicationContext(), helper.getVideoName(videoUri));
         restHelper.getResults(videoName);
     }
 

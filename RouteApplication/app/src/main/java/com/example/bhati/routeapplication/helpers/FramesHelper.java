@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.example.bhati.routeapplication.Activities.properties;
 import com.example.bhati.routeapplication.Interface.GotLabels;
 import com.example.bhati.routeapplication.Interface.OnFrameExtracted;
+import com.example.bhati.routeapplication.Model.LabelPOJO;
 import com.example.bhati.routeapplication.Pojo.FramesResult;
 import com.example.bhati.routeapplication.Pojo.ImageDetectionResult;
 import com.example.bhati.routeapplication.Pojo.ImageLabel;
@@ -26,6 +27,8 @@ import com.google.gson.JsonObject;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +60,9 @@ public class FramesHelper {
     private ArrayList<Integer> timestamps;
     private int lengthOfVideo;
     HashMap<Integer,LatLng> timeLocationMap;
+    ArrayList<String> listOfFrameNames;
+    HashMap<String, LabelPOJO> individualframesResults;
+    ArrayList<LatLng> selectedCoordinatesList;
 
     public FramesHelper(Context context){
         timestamps = new ArrayList<>();
@@ -63,6 +70,7 @@ public class FramesHelper {
         metadataRetriever = new MediaMetadataRetriever();
         REGULAR_FRAME_INTERVAL = properties.REGULAR_FRAME_INTERVAL_MILLIS;
         timeLocationMap = new HashMap<>();
+        listOfFrameNames = new ArrayList<>();
     }
 
 
@@ -87,8 +95,9 @@ public class FramesHelper {
      * this fxn returns the name of the video
      * @return name of the video
      */
-    public String getVideoName(){
-        return getVideoFileNameFromUriWithoutExtensions(videoPath);
+    public String getVideoName(String path){
+        Log.d("nuttygeek_uri", "uri being passed to getVideoName: "+path.toString());
+        return getVideoFileNameFromUriWithoutExtensions(path);
     }
 
     /**
@@ -374,22 +383,23 @@ public class FramesHelper {
      * @param result Image Detection Result
      * @return ArrayList of timestamps
      */
-    public void createTimestampsFromImageDetectionResult(ArrayList<LatLng> points, ImageDetectionResult result){
-        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
-        Set<String> keySet = map.keySet();
-        ArrayList<String> frameTimeStamps = new ArrayList<>(keySet);
-        ArrayList<Integer> frameIntTimeStamps = getIntArrayListFromStringArrayListSorted(frameTimeStamps);
-        int frameTimeStampSize = frameTimeStamps.size();
-        int coordinatesSize = points.size();
-        Log.v("nuttygeek_time", "Size of time Stamps: "+frameTimeStampSize);
-        Log.v("nuttygeek_points", "Size of polyline Points: "+coordinatesSize);
-        int gap = points.size()/frameTimeStampSize;
-        ArrayList<LatLng> newCoordinates = getEveryNthValue(gap, points);
-        // creating the hashmap
-        for(int i=0; i<frameTimeStampSize; i++){
-            timeLocationMap.put(frameIntTimeStamps.get(i), newCoordinates.get(i));
-        }
-        Log.v("nuttygeek_map", "Time Location Map: "+timeLocationMap);
+    public void createTimestampsFromResult(ArrayList<LatLng> points, ImageDetectionResult result){
+//        HashMap<String, ArrayList<ImageLabel>> map = result.getFrameDataMap();
+//        Set<String> keySet = map.keySet();
+//        ArrayList<String> frameTimeStamps = new ArrayList<>(keySet);
+//        ArrayList<Integer> frameIntTimeStamps = getIntArrayListFromStringArrayListSorted(frameTimeStamps);
+//        int frameTimeStampSize = frameTimeStamps.size();
+//        int coordinatesSize = points.size();
+//        Log.v("nuttygeek_time", "Size of time Stamps: "+frameTimeStampSize);
+//        Log.v("nuttygeek_points", "Size of polyline Points: "+coordinatesSize);
+//        int gap = points.size()/frameTimeStampSize;
+//        ArrayList<LatLng> newCoordinates = getEveryNthValue(gap, points);
+//        // creating the hashmap
+//        for(int i=0; i<frameTimeStampSize; i++){
+//            timeLocationMap.put(frameIntTimeStamps.get(i), newCoordinates.get(i));
+//        }
+//        Log.v("nuttygeek_map", "Time Location Map: "+timeLocationMap);
+
     }
 
 
@@ -493,17 +503,18 @@ public class FramesHelper {
     }
 
 
-    public String getFrameNameFromLocation(LatLng point){
-        // look in time location map and get the frame no
-        String frameNo = null;
-        for(HashMap.Entry<Integer, LatLng> entry: timeLocationMap.entrySet()){
-            Log.v("nuttygeek_en", entry.getKey()+" : "+entry.getValue().toString());
-            if(point.equals(entry.getValue())){
-                frameNo = entry.getKey().toString();
-                Log.v("nuttygeek_frame_no", "Frame a point: "+point.toString()+ " is: "+frameNo);
-            }
-        }
-        return frameNo;
+    /**
+     * get frame name form the given latlng point and selected latlngs
+     * @param point lat lng point
+     * @param selectedPoints selected points
+     * @return name of the frame
+     */
+    public String getFrameNameFromLocation(LatLng point, ArrayList<LatLng> selectedPoints){
+        // find the index of this marker in selected list
+        int index  = selectedPoints.indexOf(point);
+        // then get the framelist value at the same index
+        String frameName = listOfFrameNames.get(index);
+        return frameName;
     }
 
     /**
@@ -524,7 +535,7 @@ public class FramesHelper {
      * @return null
      */
     public String getAbsolutePathOfImageFromFrameName(String frameName){
-        String videoName = getVideoName();
+        String videoName = getVideoName(videoPath);
         Log.v("nuttygeek_path", "Video Name: "+videoName);
         Log.v("nuttygeek_path", "Frame Name: "+frameName);
         File f = new File(Environment.getExternalStorageDirectory()+"/RouteApp/"+videoName+"/"+frameName+".jpg");
@@ -592,10 +603,147 @@ public class FramesHelper {
         return newResult;
     }
 
+    /**
+     * this fxn extracts the individual frame results and keep it in the data memebr
+     * @param result result
+     */
+    public void extractIndividualFrameData(String result) {
+         individualframesResults = new HashMap<>();
+        // create arraylist of hashmaps
+        try {
+            JSONObject obj = new JSONObject(result);
+            JSONObject imagesObj = obj.getJSONObject("images");
+            JSONArray listOfKeys = imagesObj.names();
+            // iterate over keys
+            for(int i=0; i<listOfKeys.length(); i++){
+                // now convert the object inside the frame name to Label POJO
+                String frameName = listOfKeys.getString(i);
+                Log.v("nuttygeek_labels", frameName);
+                Gson gson = new Gson();
+                LabelPOJO pojoObject = gson.fromJson(imagesObj.getJSONObject(frameName).toString(), LabelPOJO.class);
+                Log.v("nuttygeek_pojo", pojoObject.getBicycle().toString());
+                individualframesResults.put(frameName, pojoObject);
+            }
+            // now based on list of frame name calculate latlngs
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 
+    /**
+     * this fxn returns the label pojo object by giving latlng point
+     * @param point lat lng point
+     * @return
+     */
+    public HashMap<String, LabelPOJO> getResultHashMapFromCoordinate(LatLng point){
+        //TODO: add the code here
+        return null;
+    }
 
 
+    /**
+     * this fxn only extracts list of frames names from the result got from server
+     * @param result result in string form
+     */
+    public void extractListOfFrameNames(String result){
+        try {
+            JSONObject obj = new JSONObject(result);
+            JSONObject imagesObj = obj.getJSONObject("images");
+            // iterate over imagesObj
+            JSONArray names = imagesObj.names();
+            for(int i=0; i<names.length(); i++){
+                listOfFrameNames.add(names.get(i).toString());
+            }
+            //Collections.sort(listOfFrameNames);
+            Log.v("nuttygeek_json_array", names.toString());
+        }catch (Exception e){
+            Log.v("nuttygeek_error", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * this fxn takes the list of all LatLngs and return the no of selected LatLngs
+     * @param mainPoints main polyline
+     */
+    public ArrayList<LatLng> getCoordinatesList(ArrayList<LatLng> mainPoints, String result){
+        ArrayList<LatLng> newCoordinatesList = new ArrayList<>();
+        try {
+            JSONObject resultObj = new JSONObject(result);
+            JSONObject imagesObj = resultObj.getJSONObject("images");
+            // getting size of images object
+            int size = imagesObj.names().length();
+            int gap  = mainPoints.size()/size;
+            // get size no of values from mainPoints
+            for(int i=0; i<size; i++){
+                int index = gap+i-1;
+                Log.v("nuttygeek_points",mainPoints.get(index).toString());
+                newCoordinatesList.add(mainPoints.get(index));
+            }
+            // before doing anything extract name of frames from result
+            extractListOfFrameNames(result);
+            // checking if size of new coordinate list is equal to list frames
+            if(newCoordinatesList.size() == listOfFrameNames.size()){
+                Log.v("nuttygeek_compare", "size of latlngs and size of frame names are same");
+                Collections.sort(listOfFrameNames);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return newCoordinatesList;
+    }
+
+    /**
+     * this fxn returns the overall Aggregate Data from the result
+     * @param result aggregate result
+     * @return
+     */
+    public HashMap<String, Double> getAggregateResultFromResultString(String result){
+        HashMap<String, Double> aggregateData = new HashMap<>();
+        try{
+            JSONObject obj = new JSONObject(result);
+            JSONObject aggregateJsonObj = obj.getJSONObject("aggregate");
+            Gson g  = new Gson();
+            LabelPOJO labelObj = g.fromJson(aggregateJsonObj.toString(), LabelPOJO.class);
+            Log.v("nuttygeek_json", String.valueOf(labelObj.getBicycle()));
+            aggregateData = labelObj.getFullHashMap();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return aggregateData;
+    }
+
+
+    /**
+     * generic function which gives equdistant points to equate 2 non equal arraylists
+     * @param totalIndexes tiatl no of indexes
+     * @param noOfIndexesToSelect no of indexes to select
+     * @return list of indexes selected
+     */
+    public ArrayList<Integer> selectNPointsFromArrayList(int totalIndexes, int noOfIndexesToSelect){
+        ArrayList<Integer> indexes = new ArrayList<>();
+        int gap = totalIndexes/noOfIndexesToSelect;
+        for(int i=0; i<noOfIndexesToSelect; i++){
+            int value = gap+(gap*i)-1;
+            indexes.add(value);
+            Log.v("nuttygeek_general", String.valueOf(value));
+        }
+        return indexes;
+    }
+
+
+    /**
+     * this function returns label pojo object from the given lat lng coordinate
+     * @param frameName LatLng object
+     * @return label pojo object
+     */
+    public LabelPOJO getLabelPojoFromFrameName(String frameName) {
+        // get the index
+        LabelPOJO pojoObj = individualframesResults.get(frameName);
+        return pojoObj;
+    }
 
 
 }

@@ -60,7 +60,7 @@ public class FramesRestApiHelper {
     public void extractFrames(String videoUriString){
         helper = new FramesHelper(this.context);
         helper.setVideoPath(videoUriString);
-        prefHelper = new SharedPrefHelper(this.context, helper.getVideoName());
+        prefHelper = new SharedPrefHelper(this.context, helper.getVideoName(videoUriString));
         helper.extractAllFrames(new OnFrameExtracted() {
             @Override
             public void onFrameExtractionCompleted() {
@@ -130,8 +130,7 @@ public class FramesRestApiHelper {
     public void getResults(String videoName){
         Log.v("nuttygeek_service", "videoName in get results: "+videoName);
         Map<String, String> map = new HashMap<>();
-//      map.put("video_name", videoName);
-        map.put("video_name", "test2");
+        map.put("video_name", videoName);
         FrameUploadApiClient client = retrofit.create(FrameUploadApiClient.class);
         Call<ResponseBody> resultCall = client.getResult(map);
         resultCall.enqueue(new Callback<ResponseBody>() {
@@ -148,12 +147,12 @@ public class FramesRestApiHelper {
                     }catch(Exception e){
                         e.printStackTrace();
                     }
-                    // if error code is 429 , sleep the thread for 5 seconds
+                    // if error code is 429 , sleep the thread for 10 seconds
                 }else if(response.code() == 429){
                     try {
-                        Log.v("nuttygeek_res", "response code is: 200");
-                        Thread.sleep(5000);
-                        Log.v("nuttygeek_res", "fetching the result again");
+                        Log.v("nuttygeek_res", "response code is: 429");
+                        Thread.sleep(10000);
+                        Log.v("nuttygeek_res", "waited for 10 seconds, fetching the result again");
                         //calling this function again
                         getResults(videoName);
                     } catch (InterruptedException e) {

@@ -435,8 +435,7 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     final long currentTimeMillis = System.currentTimeMillis();
                     final String audio_file_path = vfile + ".wav";
                     CreatSubExcelSheet(video_file.getName());
-                    storeDataInDb(finalUri, file, size, name,audio_file_path);
-
+                    storeDataInDb(finalUri, file, size, name, audio_file_path);
                     //TODO: START THE SERVICE
                     FrameUploadService.startActionExtracting(getApplicationContext(), finalUri);
                 }
