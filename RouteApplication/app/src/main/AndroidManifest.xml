@@ -13,13 +13,12 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".Activities.WordCloudActivity"></activity>
         <activity android:name=".Activities.FrameTest" />
-
         <activity
             android:name=".Testing.Test"
             android:label="@string/title_activity_test"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".Activities.CamreaView"
             android:label="@string/title_activity_camrea_view"
@@ -65,23 +64,23 @@
         <activity
             android:name=".Activities.Speech"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="label" />
+
         <service
             android:name=".Services.FrameUploadService"
-            android:exported="false"></service>
-
+            android:exported="false" />
         <service
             android:name=".Services.background_location_updates"
             android:exported="false"
             android:stopWithTask="true"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
+
     <uses-feature android:name="android.hardware.camera" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

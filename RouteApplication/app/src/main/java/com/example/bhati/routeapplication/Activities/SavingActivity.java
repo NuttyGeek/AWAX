@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.MediaMetadataRetriever;
@@ -19,6 +20,7 @@ import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -97,7 +99,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -116,7 +117,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private MapboxMap map;
     public Boolean prevplay;
     private Location originLocation;
-    private Button btnUpload, btnSpeechToText;
+    private Button btnUpload, btnSpeechToText, wordCloudButton;
     private VideoView videoView;
     private ToggleButton btnPlay;
     private Marker currentLocationMarker;
@@ -212,6 +213,17 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         //audioImage = findViewById(R.id.menu_button);
         menuLayout = findViewById(R.id.menu);
         colorList = findViewById(R.id.color_list);
+        wordCloudButton = findViewById(R.id.word_cloud);
+        // word cloud click listener
+        wordCloudButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(SavingActivity.this, WordCloudActivity.class);
+                String videoName = getVideoNameFromVideoUri(videoUri);
+                i.putExtra("videoName", videoName);
+                startActivityForResult(i, 1);
+            }
+        });
 //        endregion
 //        mAuth = FirebaseAuth.getInstance();
 //        if (mAuth.getCurrentUser() != null) {
@@ -265,12 +277,14 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        //TODO: show dialog with keywords
                                         //Log.v("nuttygeek_keywords", keywords.toString());
                                         //showToast("keywords: "+keywords.toString());
                                         KeywordsDialog keywordsDialog = new KeywordsDialog(SavingActivity.this);
                                         String content  = keywordsDialog.convertListIntoString(keywords);
                                         keywordsDialog.showDialog(content);
+                                        String videoName = getVideoNameFromVideoUri(videoUri);
+                                        // create arrylist from keywords string
+                                        saveKeywordsInSharedPref(videoName, "chunk"+i, content);
                                         audioChunkDialog.dismiss();
                                     }
                                 });
@@ -695,6 +709,18 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     }
 //    endregion
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 1){
+            Toast.makeText(this, "Got result from word cloud", Toast.LENGTH_SHORT).show();
+
+        }else{
+            // nothing
+        }
+    }
+
     public String GetText(String files)
     {
         try
@@ -803,33 +829,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         });
         alert.show();
     }
-//    public void ShowAlertDialogWithListview()
-//    {
-//        List<String> chunkList = new ArrayList<String>();
-//        //Create sequence of items
-//        final CharSequence[] values = listChumktime.toArray(new String[listChumktime.size()]);
-//        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-//        dialogBuilder.setTitle("Speech Chunk List");
-//        dialogBuilder.setItems(values, new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int item) {
-//                String selectedText = listChumktext.get(item).toString();  //Selected item in listview
-//
-//                showAlert(selectedText,values[item].toString());
-//            }
-//        });
-//        //Create alert dialog object via builder
-//        AlertDialog alertDialogObject = dialogBuilder.create();
-//        //Show the dialog
-//        alertDialogObject.setCancelable(false);
-//        alertDialogObject.show();
-//    }
-
-//    class MainListHolder {
-//
-//        private TextView tvText;
-//
-//    }
-
 
 
     private class ViewHolder {
@@ -1972,6 +1971,52 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      */
     public void showToast(String msg){
         Toast.makeText(SavingActivity.this,msg, Toast.LENGTH_LONG ).show();
+    }
+
+    /**
+     * this fxn saves the keywords in shared pref
+     * @param videoName name of video
+     * @param audioChunkName audio chunk name
+     * @param keywords list of keywords
+     */
+    public void saveKeywordsInSharedPref(String videoName, String audioChunkName, String keywords){
+
+        String[] keywordsArr = keywords.split(",");
+        SharedPreferences.Editor editor = getSharedPreferences("keywords", MODE_PRIVATE).edit();
+        JSONObject object = new JSONObject();
+        try {
+            object.put(audioChunkName,getJSONArrayFromStringArray(keywordsArr));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        editor.putString(videoName, object.toString());
+        boolean saved = editor.commit();
+        Log.v("nuttygeek_saved", "keywords saved in Shared Pref");
+    }
+
+    /**
+     * this fxn converts the string array into json array
+     * @param arr string array
+     * @return JSONArray
+     */
+    public JSONArray getJSONArrayFromStringArray(String[] arr){
+        JSONArray jsonArray = new JSONArray();
+        for(String str: arr){
+            jsonArray.put(str);
+        }
+        return jsonArray;
+    }
+
+    /**
+     * this fxn returns the video name from video Uri
+     * @param uri uri of video
+     * @return Video Name
+     */
+    public String getVideoNameFromVideoUri(String uri){
+        String videoName = uri.split("/RouteApp/")[1];
+        String newStr = videoName.replace(".mp4", "");
+        Log.v("nuttygeek_uri", newStr);
+        return newStr;
     }
 
 }

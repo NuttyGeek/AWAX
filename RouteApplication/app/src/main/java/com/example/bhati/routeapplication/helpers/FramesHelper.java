@@ -2,6 +2,7 @@ package com.example.bhati.routeapplication.helpers;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Environment;
@@ -31,6 +32,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -106,7 +109,11 @@ public class FramesHelper {
      */
     public void getFrameFromVideo(int time){
         // getting image from video at particular time
-        Bitmap image = metadataRetriever.getFrameAtTime(time*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+        Bitmap originalImage = metadataRetriever.getFrameAtTime(time*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+        // compressing the image
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        originalImage.compress(Bitmap.CompressFormat.JPEG, 50, outStream);
+        Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(outStream.toByteArray()));
         String dirPath = "/RouteApp/"+getVideoFileNameFromUriWithoutExtensions(this.videoPath);
         String fileName = String.valueOf(time)+".jpg";
         //saving image in external storage

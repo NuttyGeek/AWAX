@@ -35,7 +35,9 @@
                         mapbox:mapbox_cameraTargetLat="40.73581"
                         mapbox:mapbox_cameraTargetLng="-73.99155"
                         mapbox:mapbox_cameraZoom="11"
-                        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10" />
+                        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10" >
+
+                    </com.mapbox.mapboxsdk.maps.MapView>
                     <ProgressBar
                         android:id="@+id/progress_bar_speechto_text"
                         android:layout_gravity="right"
@@ -86,6 +88,13 @@
                 </LinearLayout>
 
             </LinearLayout>
+
+            <Button
+                android:id="@+id/word_cloud"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:text="Word Cloud" />
 
         </RelativeLayout>
 
