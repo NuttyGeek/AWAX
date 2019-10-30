@@ -78,5 +78,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
     // word cloud
     implementation 'com.github.AnyChart:AnyChart-Android:1.1.2'
+    // flexbox
+    implementation 'com.google.android:flexbox:1.1.1'
 }
 apply plugin: 'com.google.gms.google-services'

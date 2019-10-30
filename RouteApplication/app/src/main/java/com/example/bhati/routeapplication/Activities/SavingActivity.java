@@ -715,7 +715,24 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 1){
             Toast.makeText(this, "Got result from word cloud", Toast.LENGTH_SHORT).show();
-
+            String keyword = data.getStringExtra("keyword");
+            String chunkName = data.getStringExtra("chunkName");
+            Log.v("nuttygeek_intent", "keyword: "+keyword+" chunkNmae: "+chunkName);
+            int index = Integer.parseInt(chunkName.replace("chunk", ""));
+            LatLng point = properties.firstCoordinatesOfPolylines.get(index);
+            mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
+            mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
+                        @Override
+                        public void onSuccess(double smallestDistance, LatLng latlng, int position) {
+                            Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+                            addMarkerNew(smallestDistance, latlng, position);
+                        }
+                        @Override
+                        public void onFailure() {
+                            Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
         }else{
             // nothing
         }
