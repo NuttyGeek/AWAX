@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -37,6 +39,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -61,9 +65,11 @@ import com.example.bhati.routeapplication.helpers.FramesHelper;
 import com.example.bhati.routeapplication.helpers.KeywordsDialog;
 import com.example.bhati.routeapplication.helpers.KeywordsHelper;
 import com.example.bhati.routeapplication.helpers.MapAndVideoSeekHelper;
+import com.example.bhati.routeapplication.helpers.WordCloudHelper;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+import com.google.android.flexbox.FlexboxLayout;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -117,7 +123,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private MapboxMap map;
     public Boolean prevplay;
     private Location originLocation;
-    private Button btnUpload, btnSpeechToText, wordCloudButton;
+    private Button btnUpload, btnSpeechToText;
+    ToggleButton wordCloudButton;
     private VideoView videoView;
     private ToggleButton btnPlay;
     private Marker currentLocationMarker;
@@ -141,6 +148,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private String str_aurdio_file;
     private String[] arrayStr;
     private String[] arrayStr1;
+    ArrayList<String> colorStrList;
+    FrameLayout videoFrame;
     //  to get the distinct no of polylines created on map
 
     int count = 0;
@@ -184,6 +193,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     List<List<LatLng>> lists_pollline = new ArrayList<List<LatLng>>();
     Button framesButton;
     FramesHelper framesHelper;
+    FlexboxLayout flexboxLayout;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -196,6 +206,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         setContentView(R.layout.activity_saving);
 
         // creating frames helper
+        videoFrame = findViewById(R.id.videoFrame);
         framesHelper = new FramesHelper(this);
         framesButton = findViewById(R.id.framesButton);
         list = new ArrayList<>();
@@ -214,14 +225,89 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         menuLayout = findViewById(R.id.menu);
         colorList = findViewById(R.id.color_list);
         wordCloudButton = findViewById(R.id.word_cloud);
+        flexboxLayout = findViewById(R.id.flexbox);
         // word cloud click listener
-        wordCloudButton.setOnClickListener(new View.OnClickListener() {
+//        wordCloudButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+////                Intent i = new Intent(SavingActivity.this, WordCloudActivity.class);
+////                String videoName = getVideoNameFromVideoUri(videoUri);
+////                i.putExtra("videoName", videoName);
+////                i.putStringArrayListExtra("colors", colorStrList);
+////                startActivityForResult(i, 1);
+//                // hide the videoView and show the word cloud
+//                videoView.setVisibility(View.GONE);
+//                // show the word cloud here
+//
+//
+//            }
+//        });
+        // bedefault show videoview & hide wordcloud
+        flexboxLayout.setVisibility(View.GONE);
+        wordCloudButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                Intent i = new Intent(SavingActivity.this, WordCloudActivity.class);
-                String videoName = getVideoNameFromVideoUri(videoUri);
-                i.putExtra("videoName", videoName);
-                startActivityForResult(i, 1);
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                // show wordCloud & hide videoView
+                if(b){
+                    flexboxLayout.setVisibility(View.VISIBLE);
+                    videoFrame.setVisibility(View.GONE);
+                    // now read the shared and do the stuff
+                    WordCloudHelper wordCloudHelper = new WordCloudHelper(SavingActivity.this);
+                    HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
+                    Log.v("nuttygeek_map", map.toString());
+                    try{
+                        ArrayList<TextView> textViewList = wordCloudHelper.getTextviewListFromHashMap(map,colorStrList,new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // whenever any textview is clicked you get here
+                                TextView textview = (TextView)view;
+                                textview.setTextColor(Color.BLACK);
+                                String keywordText = textview.getText().toString();
+                                Log.v("nuttygeek_click", "clicked on: "+keywordText);
+                                // get the audioChunk from keyword name
+                                try{
+                                    String audioChunkName = wordCloudHelper.getChunkNameFromKeyword(keywordText, map);
+                                    if(audioChunkName!=null){
+                                        Log.v("nuttygeek_intent", "chunk: "+audioChunkName+ " keyword: "+keywordText);
+//                                        Intent i = new Intent();
+//                                        i.putExtra("chunkName", audioChunkName);
+//                                        i.putExtra("keyword", keywordText);
+//                                        setResult(Activity.RESULT_OK, i);
+//                                        finish();
+                                        //TODO: add word click action
+                                        int index = Integer.parseInt(audioChunkName.replace("chunk", ""));
+                                        LatLng point = properties.firstCoordinatesOfPolylines.get(index);
+                                        mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
+                                        mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
+                                                    @Override
+                                                    public void onSuccess(double smallestDistance, LatLng latlng, int position) {
+                                                        Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+                                                        addMarkerNew(smallestDistance, latlng, position);
+                                                    }
+                                                    @Override
+                                                    public void onFailure() {
+                                                        Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                        );
+                                    }else{
+                                        Log.v("nuttygeek_intent", "audio chunk name is null");
+                                    }
+                                }catch(JSONException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        Log.v("nuttygeek_textview_list", textViewList.toString());
+                        wordCloudHelper.addTextViewToFlexbox(flexboxLayout, textViewList);
+                    }catch(JSONException e){
+                        e.printStackTrace();
+                    }
+                }else{
+                    // show videoView & hide word cloud
+                    flexboxLayout.setVisibility(View.GONE);
+                    videoFrame.setVisibility(View.VISIBLE);
+                }
             }
         });
 //        endregion
@@ -1931,10 +2017,10 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     public void showColorList(ArrayList<String> colors, ArrayList<String> texts){
 //    make  a list of color text objects
 //        get list of texts
-        List<String> colorList = properties.colorsdata;
+        colorStrList = properties.colorsdata;
         ArrayList<String> textList = listChumktext;
         for (int i=0; i<textList.size(); i++){
-            String color = colorList.get(i);
+            String color = colorStrList.get(i);
             String text = textList.get(i);
             ColorText colorTextObj = new ColorText(color, text);
             mainColorTextList.add(colorTextObj);

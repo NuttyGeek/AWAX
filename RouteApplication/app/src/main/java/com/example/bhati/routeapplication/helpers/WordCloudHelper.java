@@ -1,58 +1,34 @@
-package com.example.bhati.routeapplication.Activities;
+package com.example.bhati.routeapplication.helpers;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.anychart.chart.common.dataentry.CategoryValueDataEntry;
 import com.anychart.chart.common.dataentry.DataEntry;
-import com.example.bhati.routeapplication.R;
 import com.google.android.flexbox.FlexboxLayout;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class WordCloudActivity extends AppCompatActivity implements View.OnClickListener {
+public class WordCloudHelper {
 
-    HashMap<String, JSONArray> keyMap;
-    ProgressBar progressBar;
-    ArrayList<TextView> textViewList;
-    ArrayList<String> colorList;
+    Context context;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_word_cloud);
-
-        Intent i = getIntent();
-        String videoName = i.getStringExtra("videoName");
-        colorList = i.getStringArrayListExtra("colors");
-        Log.v("nuttygeek_colors", "color_list: "+colorList.toString());
-        keyMap = getKeywordsFromSharedPref(videoName);
-        progressBar = findViewById(R.id.progress);
-        FlexboxLayout flexboxLayout = (FlexboxLayout) findViewById(R.id.flexbox);
-        // getting the data from shared pref
-        HashMap<String, JSONArray> map = getKeywordsFromSharedPref(videoName);
-        try{
-            textViewList = getTextviewListFromHashMap(map);
-            Log.v("nuttygeek_textview_list", textViewList.toString());
-
-        }catch(JSONException e){
-            e.printStackTrace();
-        }
-        addTextViewToFlexbox(flexboxLayout, textViewList);
-
+    public WordCloudHelper(Context context){
+        this.context = context;
     }
 
     /**
@@ -61,9 +37,15 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
      * @param list list of textviews
      */
     public void addTextViewToFlexbox(FlexboxLayout layout, ArrayList<TextView> list){
-        Log.v("nuttygeek_layout", "list: "+list.toString());
-        for(TextView textView: list){
-            layout.addView(textView);
+        // only add textview if the flexbox layout is empty
+        TextView tx = (TextView) layout.getChildAt(0);
+        if(tx==null){
+            Log.v("nuttygeek_layout", "list: "+list.toString());
+            for(TextView textView: list){
+                layout.addView(textView);
+            }
+        }else{
+            Log.v("nuttygeek_text", "textview are already added, no need to add more");
         }
     }
 
@@ -71,49 +53,26 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
      * this fxn returns the list of textviews
      * @param map hashmap
      */
-    public ArrayList<TextView> getTextviewListFromHashMap(HashMap<String, JSONArray> map) throws JSONException {
+    public ArrayList<TextView> getTextviewListFromHashMap(HashMap<String, JSONArray> map,ArrayList<String> colorList, View.OnClickListener listener) throws JSONException {
         Log.v("nuttygeek_list", map.toString());
         ArrayList<TextView> textViewList = new ArrayList<>();
         // get list of keys
         Set keysSet = map.keySet();
         for(HashMap.Entry<String, JSONArray> entry: map.entrySet()){
             JSONArray arr = entry.getValue();
+            String chunkName = entry.getKey();
+            int chunkNo = Integer.parseInt(chunkName.replace("chunk", ""));
             for(int i=0; i<arr.length(); i++){
-                TextView textView = new TextView(this);
+                TextView textView = new TextView(context);
                 textView.setText(arr.get(i).toString());
                 textView.setTextSize(getRandomSize());
-                textView.setTextColor(Color.parseColor(colorList.get(i)));
-                textView.setOnClickListener(this);
+                textView.setTextColor(Color.parseColor(colorList.get(chunkNo)));
+                textView.setOnClickListener(listener);
                 textViewList.add(textView);
             }
+            Log.v("nuttygeek_text", textViewList.get(0).getText().toString());
         }
         return textViewList;
-    }
-
-    @Override
-    public void onClick(View view) {
-        // whenever any textview is clicked you get here
-        TextView textview = (TextView)view;
-        textview.setTextColor(Color.BLACK);
-        String keywordText = textview.getText().toString();
-        Log.v("nuttygeek_click", "clicked on: "+keywordText);
-        // get the audioChunk from keyword name
-        try{
-            String audioChunkName = getChunkNameFromKeyword(keywordText, keyMap);
-            if(audioChunkName!=null){
-                Log.v("nuttygeek_intent", "chunk: "+audioChunkName+ " keyword: "+keywordText);
-                Intent i = new Intent();
-                i.putExtra("chunkName", audioChunkName);
-                i.putExtra("keyword", keywordText);
-                setResult(Activity.RESULT_OK, i);
-                finish();
-            }else{
-                Log.v("nuttygeek_intent", "audio chunk name is null");
-            }
-        }catch(JSONException e){
-            e.printStackTrace();
-        }
-
     }
 
     /**
@@ -122,7 +81,7 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
      */
     public HashMap<String, JSONArray> getKeywordsFromSharedPref(String videoName){
         HashMap<String, JSONArray> keywordsMap = new HashMap<>();
-        SharedPreferences pref = getSharedPreferences("keywords", MODE_PRIVATE);
+        SharedPreferences pref = context.getSharedPreferences("keywords", Context.MODE_PRIVATE);
         String objStr = pref.getString(videoName, null);
         if(objStr!=null){
             try{
@@ -130,9 +89,9 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
                 Log.v("nuttygeek_json", obj.toString());
                 JSONArray arr = obj.names();
                 for(int i=0; i<arr.length(); i++){
-                     JSONArray tempArray = obj.getJSONArray(arr.get(0).toString());
-                     Log.v("nuttygeek_json_arr", tempArray.toString());
-                     keywordsMap.put("chunk"+i,tempArray);
+                    JSONArray tempArray = obj.getJSONArray(arr.get(0).toString());
+                    Log.v("nuttygeek_json_arr", tempArray.toString());
+                    keywordsMap.put("chunk"+i,tempArray);
                 }
             }catch(JSONException e){
                 e.printStackTrace();
@@ -172,17 +131,17 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
         for(HashMap.Entry<String, JSONArray> entry: map.entrySet()){
             String chunkName = entry.getKey();
             JSONArray arr = map.get(chunkName);
-           for(int i=0; i<arr.length();i++ ){
-               try {
-                   String keyword = arr.get(i).toString();
-                   if(keyword!="``"){
-                       dataEntryList.add(new CategoryValueDataEntry(keyword,chunkName, 123));
-                   }
-               } catch (JSONException e) {
-                   e.printStackTrace();
-               }
-           }
-       }
+            for(int i=0; i<arr.length();i++ ){
+                try {
+                    String keyword = arr.get(i).toString();
+                    if(keyword!="``"){
+                        dataEntryList.add(new CategoryValueDataEntry(keyword,chunkName, 123));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return dataEntryList;
     }
 
@@ -222,6 +181,26 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
             }
         }
         return chunkName;
+    }
+
+
+    /**
+     * this fxn returns boolean result telling if the keyword passed is one of keywords on server
+     * @param keyword keyword to be checked
+     * @return boolean result
+     */
+    public boolean isValidLabel(String keyword){
+        String[] serverKeywords = {"road", " sidewalk", "building", "wall",
+        "fence", "pole",
+        "traffic light",
+        "traffic sign",
+        "vegetation", "terrain",
+        "sky", "person",
+        "rider", "car",
+        "truck", "bus train",
+        "motocycle"};
+        boolean valid = Arrays.asList(serverKeywords).contains(keyword);
+        return valid;
     }
 
 }

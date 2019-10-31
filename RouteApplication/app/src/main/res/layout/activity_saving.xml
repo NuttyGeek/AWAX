@@ -89,12 +89,18 @@
 
             </LinearLayout>
 
-            <Button
+            <ToggleButton
                 android:id="@+id/word_cloud"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textOff="Video"
+                android:textOn="Word Cloud"
                 android:layout_alignParentRight="true"
-                android:text="Word Cloud" />
+                android:text="Word" />
+<!--            <ToggleButton-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Word Cloud"/>-->
 
         </RelativeLayout>
 
@@ -108,6 +114,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:id="@+id/videoFrame"
                 android:background="@color/black">
 
                 <!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
@@ -126,7 +133,6 @@
                 <!--android:id="@+id/videoView" />-->
                 <!--</RelativeLayout>-->
                 <VideoView
-
                     android:id="@+id/videoView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -153,6 +159,19 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content" />
             </FrameLayout>
+
+            <com.google.android.flexbox.FlexboxLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="20dp"
+                android:id="@+id/flexbox"
+                android:gravity="center_vertical"
+                app:flexWrap="wrap"
+                app:alignItems="center"
+                >
+            </com.google.android.flexbox.FlexboxLayout>
         </LinearLayout>
 
         <!-- button layout-->
