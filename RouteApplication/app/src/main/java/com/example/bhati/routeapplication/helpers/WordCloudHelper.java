@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,8 +65,14 @@ public class WordCloudHelper {
             int chunkNo = Integer.parseInt(chunkName.replace("chunk", ""));
             for(int i=0; i<arr.length(); i++){
                 TextView textView = new TextView(context);
-                textView.setText(arr.get(i).toString());
-                textView.setTextSize(getRandomSize());
+                String keyStr = arr.get(i).toString();
+//                ViewGroup.LayoutParams params = textView.getLayoutParams();
+//                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+//                params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                textView.setText(keyStr);
+                textView.setClickable(true);
+                float size = getAccurateSize(keyStr);
+                textView.setTextSize(size);
                 textView.setTextColor(Color.parseColor(colorList.get(chunkNo)));
                 textView.setOnClickListener(listener);
                 textViewList.add(textView);
@@ -89,7 +96,7 @@ public class WordCloudHelper {
                 Log.v("nuttygeek_json", obj.toString());
                 JSONArray arr = obj.names();
                 for(int i=0; i<arr.length(); i++){
-                    JSONArray tempArray = obj.getJSONArray(arr.get(0).toString());
+                    JSONArray tempArray = obj.getJSONArray(arr.get(i).toString());
                     Log.v("nuttygeek_json_arr", tempArray.toString());
                     keywordsMap.put("chunk"+i,tempArray);
                 }
@@ -149,17 +156,23 @@ public class WordCloudHelper {
      * this fxn returns a random size
      * @return
      */
-    public float getRandomSize(){
+    public float getAccurateSize(String keyStr){
         int[] sizes = {18,32,64,128};
-        double random = Math.random();
-        Log.v("nuttygeek_random", "random: "+random);
-        float value = (float) random * 10;
-        int intVal = (int) value;
-        Log.v("nuttygeek_random", "value: "+value);
-        int index = intVal % sizes.length;
-        Log.v("nuttygeek_random", "index: "+index);
-        Log.v("nuttygeek_random", "random size: "+sizes[index]);
-        return sizes[index];
+        // if the keyword is server label size should be 128
+        boolean isValidLabel = isValidLabel(keyStr);
+        if(isValidLabel){
+            return 80;
+        }else{
+            double random = Math.random();
+            Log.v("nuttygeek_random", "random: "+random);
+            float value = (float) random * 10;
+            int intVal = (int) value;
+            Log.v("nuttygeek_random", "value: "+value);
+            int index = intVal % sizes.length;
+            Log.v("nuttygeek_random", "index: "+index);
+            Log.v("nuttygeek_random", "random size: "+sizes[index]);
+            return 40;
+        }
     }
 
     /**

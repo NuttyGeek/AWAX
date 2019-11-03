@@ -40,7 +40,7 @@ public class FramesRestApiHelper {
     private String videoName;
     private Retrofit retrofit;
 
-    String baseUrl = "http://35.245.189.30:5000/";
+    String baseUrl = "http://geovisuals.cs.kent.edu:5000/";
 
     /**
      * private constructore for singleton class

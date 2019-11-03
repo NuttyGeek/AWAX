@@ -261,7 +261,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                             public void onClick(View view) {
                                 // whenever any textview is clicked you get here
                                 TextView textview = (TextView)view;
-                                textview.setTextColor(Color.BLACK);
                                 String keywordText = textview.getText().toString();
                                 Log.v("nuttygeek_click", "clicked on: "+keywordText);
                                 // get the audioChunk from keyword name
@@ -288,8 +287,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                                     public void onFailure() {
                                                         Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
                                                     }
-                                                }
-                                        );
+                                                });
                                     }else{
                                         Log.v("nuttygeek_intent", "audio chunk name is null");
                                     }
@@ -348,13 +346,15 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         colorList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(SavingActivity.this, mainColorTextList.get(i).getText(), Toast.LENGTH_LONG).show();
+                Log.v("nuttygeek_color_click", "clicked on : "+i);
+                Log.v("nuttygeek_audio_text", "text: "+mainColorTextList.get(i).getText()+ " color: "+mainColorTextList.get(i).getColor());
                 //using custom dialog
                 AudioChunkDialog audioChunkDialog = new AudioChunkDialog(SavingActivity.this);
                 audioChunkDialog.showDialog(mainColorTextList.get(i).getText(), new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //TODO: call the keywords endpoint
+                        // Call the keywords endpoint
+                        // Toast.makeText(SavingActivity.this, "Not getting keywords from sentence", Toast.LENGTH_SHORT).show();
                         KeywordsHelper keywordsHelper = new KeywordsHelper(getApplicationContext());
                         keywordsHelper.getKeywordsAsync(mainColorTextList.get(i).getText(),
                                 new OnKeywordsReady() {
@@ -363,13 +363,15 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        //Log.v("nuttygeek_keywords", keywords.toString());
-                                        //showToast("keywords: "+keywords.toString());
+                                        // Log.v("nuttygeek_keywords", keywords.toString());
+                                        // showToast("keywords: "+keywords.toString());
                                         KeywordsDialog keywordsDialog = new KeywordsDialog(SavingActivity.this);
                                         String content  = keywordsDialog.convertListIntoString(keywords);
-                                        keywordsDialog.showDialog(content);
+                                        // do not show the dialog
+                                        //keywordsDialog.showDialog(content);
                                         String videoName = getVideoNameFromVideoUri(videoUri);
                                         // create arrylist from keywords string
+                                        //Log.v("nuttygeek_saving", "saving keywords: "+videoName+" chunk"+i+" content: "+content);
                                         saveKeywordsInSharedPref(videoName, "chunk"+i, content);
                                         audioChunkDialog.dismiss();
                                     }
@@ -673,6 +675,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             @Override
             public void onClick(View v) {
                 //        hiding the speech to text button layout
+                wordCloudButton.setVisibility(View.VISIBLE);
                 speechToTextLayout.setVisibility(View.GONE);
                 //btnSpeechToText.setVisibility(View.GONE);
 
@@ -2084,17 +2087,39 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      */
     public void saveKeywordsInSharedPref(String videoName, String audioChunkName, String keywords){
 
+        // if there is something in the videoName property then  append if not simply add
         String[] keywordsArr = keywords.split(",");
-        SharedPreferences.Editor editor = getSharedPreferences("keywords", MODE_PRIVATE).edit();
-        JSONObject object = new JSONObject();
+        SharedPreferences sharedPref = getSharedPreferences("keywords", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        String readStr = sharedPref.getString(videoName, null);
+        JSONObject object;
+        Log.v("nuttygeek_before", "There is no value in Shared Pref when saving "+audioChunkName);
+        if(readStr!=null){
+            // there is already something in shared pref
+            Log.v("nuttygeek_before", "Threre is some value present in shared pref already: "+readStr);
+            try{
+                object = new JSONObject(readStr);
+            }catch(Exception e){
+                e.printStackTrace();
+                // if there was some error then don't worry
+                object = new JSONObject();
+            }
+        }else{
+            object = new JSONObject();
+        }
         try {
             object.put(audioChunkName,getJSONArrayFromStringArray(keywordsArr));
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Log.v("nuttygeek_saved", "videoName: "+videoName+ "obj: "+object.toString());
         editor.putString(videoName, object.toString());
         boolean saved = editor.commit();
-        Log.v("nuttygeek_saved", "keywords saved in Shared Pref");
+        if(saved) {
+            Log.v("nuttygeek_saved", "keywords saved in Shared Pref");
+        }else{
+            Log.v("nuttygeek_saved", "keywords are not saved on Shared Pref");
+        }
     }
 
     /**

@@ -14,7 +14,7 @@
         android:padding="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        android:text="Audio Chunk"/>
+        android:text="Text from Audio"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -47,7 +47,7 @@
             android:layout_margin="10dp"
             android:layout_height="wrap_content"
             android:id="@+id/keyword"
-            android:text="Keyword"/>
+            android:text="Extract Keywords"/>
     </LinearLayout>
 
 
