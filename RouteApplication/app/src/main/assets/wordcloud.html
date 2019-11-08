@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Cloud</title>
+    <style>
+        body{
+            width: 100vw;
+            height: 100vh;
+        }
+        #container{
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="https://cdn.anychart.com/releases/8.7.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.7.0/js/anychart-tag-cloud.min.js"></script>
+    <script>
+        window.onload = function(){
+        }
+        // handle the value passed to javascript function
+        function handleData(keywordsStr, valueStr){
+            drawWordCloud(keywordsStr, valueStr);
+        }
+
+        function drawWordCloud(str, valueStr){
+            var keywords = str.split(",");
+            var values = valueStr.split(",");
+            var data = [];
+            for(var i=0; i<keywords.length; i++){
+                data[i] = {x: keywords[i], value: values[i]};
+            }
+            // create a chart and set the data
+            chart = anychart.tagCloud(data);
+            chart.title("Word Cloud");
+            chart.angles([0]);
+            chart.data(data, {mode: "by-word"});
+            // set the container id
+            chart.container("container");
+            chart.mode("spiral");
+            // initiate drawing the chart
+            chart.draw();
+            chart.listen("pointClick", function(e){
+                let text = e.point.get("x");
+                JSAction.action(text);
+                // alert(text);
+            });
+            JSAction.action("executing finished");
+        }
+    </script>
+</head>
+<body>
+<div id="container">
+
+</div>
+</body>
+</html>

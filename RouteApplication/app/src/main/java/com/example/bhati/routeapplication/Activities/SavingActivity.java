@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -55,6 +56,7 @@ import android.widget.VideoView;
 import com.example.bhati.routeapplication.Database.DBHelper;
 import com.example.bhati.routeapplication.Interface.OnKeywordsReady;
 import com.example.bhati.routeapplication.Interface.OnMarkerReadyListener;
+import com.example.bhati.routeapplication.Interface.OnWordClicked;
 import com.example.bhati.routeapplication.Model.ColorText;
 import com.example.bhati.routeapplication.Model.Recorder;
 import com.example.bhati.routeapplication.MyAppl;
@@ -150,6 +152,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private String[] arrayStr1;
     ArrayList<String> colorStrList;
     FrameLayout videoFrame;
+    WordCloudHelper wordCloudHelper;
     //  to get the distinct no of polylines created on map
 
     int count = 0;
@@ -193,7 +196,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     List<List<LatLng>> lists_pollline = new ArrayList<List<LatLng>>();
     Button framesButton;
     FramesHelper framesHelper;
-    FlexboxLayout flexboxLayout;
+    WebView webView;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -224,86 +227,122 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         //audioImage = findViewById(R.id.menu_button);
         menuLayout = findViewById(R.id.menu);
         colorList = findViewById(R.id.color_list);
+        webView = findViewById(R.id.webView);
         wordCloudButton = findViewById(R.id.word_cloud);
-        flexboxLayout = findViewById(R.id.flexbox);
-        // word cloud click listener
-//        wordCloudButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-////                Intent i = new Intent(SavingActivity.this, WordCloudActivity.class);
-////                String videoName = getVideoNameFromVideoUri(videoUri);
-////                i.putExtra("videoName", videoName);
-////                i.putStringArrayListExtra("colors", colorStrList);
-////                startActivityForResult(i, 1);
-//                // hide the videoView and show the word cloud
-//                videoView.setVisibility(View.GONE);
-//                // show the word cloud here
-//
-//
-//            }
-//        });
+        // webview content
+        webView = findViewById(R.id.webView);
+        webView.setWebViewClient(new WebViewClient());
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+
         // bedefault show videoview & hide wordcloud
-        flexboxLayout.setVisibility(View.GONE);
+        webView.setVisibility(View.GONE);
         wordCloudButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 // show wordCloud & hide videoView
                 if(b){
-                    flexboxLayout.setVisibility(View.VISIBLE);
+                    webView.setVisibility(View.VISIBLE);
                     videoFrame.setVisibility(View.GONE);
                     // now read the shared and do the stuff
-                    WordCloudHelper wordCloudHelper = new WordCloudHelper(SavingActivity.this);
+                    wordCloudHelper = new WordCloudHelper(SavingActivity.this);
                     HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
                     Log.v("nuttygeek_map", map.toString());
                     try{
-                        ArrayList<TextView> textViewList = wordCloudHelper.getTextviewListFromHashMap(map,colorStrList,new View.OnClickListener() {
+                        // got the keyWordListString
+                        String keywordListString = wordCloudHelper.getStringOfKeywords(map);
+                        String valuesListString = wordCloudHelper.getStringOfImportanceValues(keywordListString);
+                        // pass it to webview
+                        webView.addJavascriptInterface(new JavaScriptAction(SavingActivity.this, new OnWordClicked() {
                             @Override
-                            public void onClick(View view) {
-                                // whenever any textview is clicked you get here
-                                TextView textview = (TextView)view;
-                                String keywordText = textview.getText().toString();
-                                Log.v("nuttygeek_click", "clicked on: "+keywordText);
-                                // get the audioChunk from keyword name
+                            public void onClick(String keyword) {
+                                // when clicked on word cloud word
+                                Toast.makeText(SavingActivity.this, keyword, Toast.LENGTH_SHORT).show();
+                                // move the map marker
+                                HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
                                 try{
-                                    String audioChunkName = wordCloudHelper.getChunkNameFromKeyword(keywordText, map);
-                                    if(audioChunkName!=null){
-                                        Log.v("nuttygeek_intent", "chunk: "+audioChunkName+ " keyword: "+keywordText);
-//                                        Intent i = new Intent();
-//                                        i.putExtra("chunkName", audioChunkName);
-//                                        i.putExtra("keyword", keywordText);
-//                                        setResult(Activity.RESULT_OK, i);
-//                                        finish();
-                                        //TODO: add word click action
-                                        int index = Integer.parseInt(audioChunkName.replace("chunk", ""));
-                                        LatLng point = properties.firstCoordinatesOfPolylines.get(index);
-                                        mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
-                                        mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
-                                                    @Override
-                                                    public void onSuccess(double smallestDistance, LatLng latlng, int position) {
-                                                        Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
-                                                        addMarkerNew(smallestDistance, latlng, position);
-                                                    }
-                                                    @Override
-                                                    public void onFailure() {
-                                                        Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                    }else{
-                                        Log.v("nuttygeek_intent", "audio chunk name is null");
-                                    }
-                                }catch(JSONException e){
+                                    int chunkIndex = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, map);
+                                    Log.v("nuttygeek_chunk", "chunkIndex: "+chunkIndex);
+                                    LatLng point = properties.firstCoordinatesOfPolylines.get(chunkIndex);
+                                    Log.v("nuttygeek_p",point.toString());
+                                    mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
+                                    mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
+                                        @Override
+                                        public void onSuccess(double smallestDistance, LatLng latlng, int position) {
+                                            Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+                                            Log.v("nuttygeek_marker_point", latlng.toString());
+                                            addMarkerNew(smallestDistance, latlng, position);
+                                        }
+                                        @Override
+                                        public void onFailure() {
+                                            Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }catch(Exception e){
                                     e.printStackTrace();
                                 }
                             }
+                        }), "JSAction");
+                        webView.loadUrl("file:///android_asset/wordcloud.html");
+                        webView.setWebViewClient(new WebViewClient(){
+                            public void onPageFinished(WebView view, String url){
+                                webView.loadUrl("javascript:handleData('"+keywordListString+"', '"+valuesListString+"')");
+                            }
                         });
-                        Log.v("nuttygeek_textview_list", textViewList.toString());
-                        wordCloudHelper.addTextViewToFlexbox(flexboxLayout, textViewList);
-                    }catch(JSONException e){
+
+                    }catch (JSONException e){
                         e.printStackTrace();
                     }
+
+//                    try{
+//                        ArrayList<TextView> textViewList = wordCloudHelper.getTextviewListFromHashMap(map,colorStrList,new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                // whenever any textview is clicked you get here
+//                                TextView textview = (TextView)view;
+//                                String keywordText = textview.getText().toString();
+//                                Log.v("nuttygeek_click", "clicked on: "+keywordText);
+//                                // get the audioChunk from keyword name
+//                                try{
+//                                    String audioChunkName = wordCloudHelper.getChunkNameFromKeyword(keywordText, map);
+//                                    if(audioChunkName!=null){
+//                                        Log.v("nuttygeek_intent", "chunk: "+audioChunkName+ " keyword: "+keywordText);
+////                                        Intent i = new Intent();
+////                                        i.putExtra("chunkName", audioChunkName);
+////                                        i.putExtra("keyword", keywordText);
+////                                        setResult(Activity.RESULT_OK, i);
+////                                        finish();
+//                                        //TODO: add word click action
+//                                        int index = Integer.parseInt(audioChunkName.replace("chunk", ""));
+//                                        LatLng point = properties.firstCoordinatesOfPolylines.get(index);
+//                                        mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
+//                                        mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
+//                                                    @Override
+//                                                    public void onSuccess(double smallestDistance, LatLng latlng, int position) {
+//                                                        Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+//                                                        addMarkerNew(smallestDistance, latlng, position);
+//                                                    }
+//                                                    @Override
+//                                                    public void onFailure() {
+//                                                        Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
+//                                                    }
+//                                                });
+//                                    }else{
+//                                        Log.v("nuttygeek_intent", "audio chunk name is null");
+//                                    }
+//                                }catch(JSONException e){
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        });
+//                        Log.v("nuttygeek_textview_list", textViewList.toString());
+//                        // wordCloudHelper.addTextViewToFlexbox(flexboxLayout, textViewList);
+//                    }catch(JSONException e){
+//                        e.printStackTrace();
+//                    }
                 }else{
                     // show videoView & hide word cloud
-                    flexboxLayout.setVisibility(View.GONE);
+                    webView.setVisibility(View.GONE);
                     videoFrame.setVisibility(View.VISIBLE);
                 }
             }

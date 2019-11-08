@@ -83,6 +83,57 @@ public class WordCloudHelper {
     }
 
     /**
+     * this fxn returns the string list of keywords from hashmap
+     * @return strign list of keywords seperated by comma ( , )
+     */
+    public String getStringOfKeywords(HashMap<String, JSONArray> map) throws JSONException {
+        String keywordsStr = "";
+        for(HashMap.Entry<String, JSONArray> entry: map.entrySet()){
+            JSONArray keywordArr = entry.getValue();
+            for(int i=0; i<keywordArr.length();i++){
+                // if it is last item don't add comma
+                if(i==keywordArr.length()-1){
+                    String tempStr = keywordArr.get(i).toString();
+                    keywordsStr += tempStr;
+                }else{
+                    String tempStr = keywordArr.get(i).toString()+",";
+                    keywordsStr += tempStr;
+                }
+            }
+        }
+        return keywordsStr;
+    }
+
+    /**
+     * this fxn returns  a string with list of values
+     * @return string
+     */
+    public String getStringOfImportanceValues(String keywordsString){
+        String valuesStr = "";
+        int normalValue = 1;
+        int labelValue = 5;
+        String[] keywords = keywordsString.split(",");
+        for(int i=0; i<keywords.length; i++){
+            String keyword = keywords[i];
+            int value = 0;
+            if(isValidLabel(keyword)){
+                value = labelValue;
+            }else{
+                // get no of occurances in the string
+                int noOfOccurances = countOccurences(keywordsString,keyword);
+                value = noOfOccurances;
+            }
+            // if it is last item don't add comma
+            if(i==(keywords.length-1)){
+                valuesStr += String.valueOf(value);
+            }else{
+                valuesStr += (String.valueOf(value)+",");
+            }
+        }
+        return valuesStr;
+    }
+
+    /**
      * this fxn gets the keywords from shared pref
      * @param videoName name of video
      */
@@ -214,6 +265,47 @@ public class WordCloudHelper {
         "motocycle"};
         boolean valid = Arrays.asList(serverKeywords).contains(keyword);
         return valid;
+    }
+
+    /**
+     * this fucntion count occurances of a keywords in the keywords String
+     * @param str string of keywords with commas
+     * @param word word for which we we need to calculate the occurances
+     * @return int no of ocuurances
+     */
+    public int countOccurences(String str, String word)
+    {
+        // split the string by spaces in a
+        String a[] = str.split(",");
+        // search for pattern in a
+        int count = 0;
+        for (int i = 0; i < a.length; i++)
+        {
+            // if match found increase count
+            if (word.equals(a[i]))
+                count++;
+        }
+        return count;
+    }
+
+    /**
+     * this fxn returns the index in which the keyword belongs to
+     * @param keyword keywords we are searching for
+     * @param map full map
+     * @return index of the keyword
+     */
+    public int getAudioChunkIndexFromKeyword(String keyword, HashMap<String, JSONArray> map) throws JSONException {
+        for(HashMap.Entry<String, JSONArray> entry: map.entrySet()){
+            String chunkName = entry.getKey();
+            int indexFromChunkName = Integer.parseInt(chunkName.replace("chunk", ""));
+            JSONArray keywordsArr= entry.getValue();
+            for(int i=0; i<keywordsArr.length(); i++){
+                if(keyword==keywordsArr.get(i).toString()){
+                    return indexFromChunkName;
+                }
+            }
+        }
+        return 0;
     }
 
 }
