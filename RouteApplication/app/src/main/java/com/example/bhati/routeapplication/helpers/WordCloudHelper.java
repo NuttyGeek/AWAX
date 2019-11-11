@@ -273,17 +273,18 @@ public class WordCloudHelper {
      * @param word word for which we we need to calculate the occurances
      * @return int no of ocuurances
      */
-    public int countOccurences(String str, String word)
-    {
+    public int countOccurences(String str, String word) {
         // split the string by spaces in a
         String a[] = str.split(",");
         // search for pattern in a
         int count = 0;
         for (int i = 0; i < a.length; i++)
         {
+            String item = a[i];
             // if match found increase count
-            if (word.equals(a[i]))
+            if (word.equals(item)){
                 count++;
+            }
         }
         return count;
     }
@@ -300,12 +301,11 @@ public class WordCloudHelper {
             int indexFromChunkName = Integer.parseInt(chunkName.replace("chunk", ""));
             JSONArray keywordsArr= entry.getValue();
             for(int i=0; i<keywordsArr.length(); i++){
-                if(keyword==keywordsArr.get(i).toString()){
+                if(keyword.equals(keywordsArr.get(i).toString())){
                     return indexFromChunkName;
                 }
             }
         }
         return 0;
     }
-
 }
