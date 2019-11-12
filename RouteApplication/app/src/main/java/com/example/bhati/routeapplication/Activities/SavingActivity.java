@@ -250,8 +250,18 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     Log.v("nuttygeek_map", map.toString());
                     try{
                         // got the keyWordListString
-                        String keywordListString = wordCloudHelper.getStringOfKeywords(map);
-                        String valuesListString = wordCloudHelper.getStringOfImportanceValues(keywordListString);
+                        String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(map);
+                        String redundantValuesListString = wordCloudHelper.getStringOfImportanceValues(redundantKeywordListString);
+                        String keywordListString = wordCloudHelper.getTop10Keywords(redundantKeywordListString);
+                        String valuesListString = wordCloudHelper.getTop10Values(redundantValuesListString);
+
+                        //TODO: get filtered keywords list
+//                        String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString);
+//                        Log.v("nuttygeek_combined", combinedString);
+//                        String [] stringParts = combinedString.split("-:-");
+//                        String keywordListString = stringParts[0];
+//                        String valuesListString = stringParts[1];
+
                         // pass it to webview
                         webView.addJavascriptInterface(new JavaScriptAction(SavingActivity.this, new OnWordClicked() {
                             @Override

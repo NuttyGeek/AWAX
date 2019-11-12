@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -308,4 +309,86 @@ public class WordCloudHelper {
         }
         return 0;
     }
+
+
+    /**
+     * this fxn returns the keywords and values which has values greater than 1 in a single string
+     * @param keywordStr keyword str
+     * @param valStr valu str
+     * @return
+     */
+    public String getFilteredKeywordValuesString(String keywordStr, String valStr){
+        String keywordsStr  = "";
+        String valueStr = "";
+        String[] keywords = keywordStr.split(",");
+        String[] values = valStr.split(",");
+        // iterate over the arrays
+        for(int i=0; i<keywords.length; i++){
+            String keyword = keywords[i];
+            String value = values[i];
+            // if it is last item don'' add comma
+            if(!value.equals("1")){
+                if(i==keywords.length-1){
+                    keywordsStr += keyword;
+                    valueStr += value;
+                }else {
+                    keywordsStr += keyword+",";
+                    valueStr += value+",";
+                }
+            }else{
+                Log.v("nuttygeek_one", "keyword: "+keyword+ " value: "+value +" : value is 1 so, it is not added in wordcloud ");
+            }
+        }
+        String finalRes = keywordsStr+"-:-"+valueStr;
+
+        return finalRes;
+    }
+
+    /**
+     * this fxn returns top 10 keywords and no more than 10 keywords
+     * @param keywordStr keywords Str
+     * @return list of max 10 keywords
+     */
+    public String getTop10Keywords(String keywordStr){
+        String result = "";
+        String[] keywords = keywordStr.split(",");
+        if(keywords.length>10){
+            for(int i=0; i<10; i++){
+                String value = keywords[i];
+                if(i==10){
+                    result += value;
+                }else{
+                    result += value+",";
+                }
+            }
+        }else{
+            result = keywordStr;
+        }
+        return result;
+    }
+
+    /**
+     * this fxn returns top 10 values and no more than 10 values
+     * @param valueStr values tring
+     * @return list of max 10 keywords
+     */
+    public String getTop10Values(String valueStr){
+        String result = "";
+        String[] values = valueStr.split(",");
+        // if values are greater than
+        if(values.length>10){
+            for(int i=0; i<10; i++){
+                String value = values[i];
+                if(i==10){
+                    result += value;
+                }else{
+                    result += value+",";
+                }
+            }
+        }else{
+            result = valueStr;
+        }
+        return result;
+    }
+
 }
