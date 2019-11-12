@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import com.example.bhati.routeapplication.Interface.OnWordClicked;
 
-class JavaScriptAction {
+public class JavaScriptAction {
 
     Context context;
     OnWordClicked callback;
@@ -22,4 +22,5 @@ class JavaScriptAction {
          interface to be implemented in other activity */
         callback.onClick(value);
     }
+
 }

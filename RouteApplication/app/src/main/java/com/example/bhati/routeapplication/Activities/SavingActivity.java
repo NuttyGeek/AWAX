@@ -259,25 +259,33 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                 // when clicked on word cloud word
                                 Toast.makeText(SavingActivity.this, keyword, Toast.LENGTH_SHORT).show();
                                 // move the map marker
-                                HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
+                                // HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
                                 try{
                                     int index = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, map);
                                     LatLng point = properties.firstCoordinatesOfPolylines.get(index);
-                                    Log.v("ngt_wordcloudlist","point: "+point.toString()+" smallestDistance: "+smallestDistance+" list: "+list.toString()+ " closestLocation: "+closestLocation.toString());
+                                    // Log.v("ngt_wordcloudlist","point: "+point.toString()+" smallestDistance: "+smallestDistance+" list: "+list.toString()+ " closestLocation: "+closestLocation.toString());
                                     mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
+                                    Log.v("nuttygeek_click", "simulating map click");
                                     mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
                                                 @Override
                                                 public void onSuccess(double smallestDistance, LatLng latlng, int position) {
                                                     Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
                                                     Log.v("nuttygeek_mapmap", "smalestDistance: "+smallestDistance+ " latlng: "+latlng+ " position: "+position);
-                                                    addMarkerNew(smallestDistance, latlng, position);
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            addMarkerNew(smallestDistance, latlng, position);
+                                                        }
+                                                    });
                                                 }
                                                 @Override
                                                 public void onFailure() {
+                                                    Log.v("nuttygeek_mapmap", "map click simulation not successful");
                                                     Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                 }catch(Exception e){
+                                    Log.v("ngt_error", "error: "+e.getMessage());
                                     e.printStackTrace();
                                 }
                             }
@@ -289,6 +297,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                             }
                         });
                     }catch (JSONException e){
+                        Log.v("ngt_error", "error: "+e.getMessage());
                         e.printStackTrace();
                     }
 
