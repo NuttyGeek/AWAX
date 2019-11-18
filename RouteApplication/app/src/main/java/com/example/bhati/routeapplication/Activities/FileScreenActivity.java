@@ -1,14 +1,19 @@
 package com.example.bhati.routeapplication.Activities;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.database.Cursor;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.media.Image;
 import android.os.Bundle;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.bhati.routeapplication.Adapter.AlbumAdapter;
@@ -33,11 +38,22 @@ public class FileScreenActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_file_screen);
 
+//        ActionBar actionBar = getActionBar();
+//        actionBar.setDisplayHomeAsUpEnabled(true);
+
         myDb = new DBHelper(this);
         recyclerView = findViewById(R.id.recycler_view);
         TextView textView  = findViewById(R.id.text);
         TextView txtViewTotalFiles  = findViewById(R.id.txtTotalFiles);
         TextView txtViewTotalSize  = findViewById(R.id.txtTotalSize);
+
+        ImageButton backButton = (ImageButton) findViewById(R.id.back);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FileScreenActivity.super.onBackPressed();
+            }
+        });
 
         albumList = new ArrayList<>();
         sizeList = new ArrayList<>();
@@ -51,7 +67,7 @@ public class FileScreenActivity extends AppCompatActivity {
             a  = a.replace(" MB","");
             sizeList.add(a);
         }
-////
+
         for (int i = 0 ; i< sizeList.size() ; i++)
         {
            total_size = total_size + Double.parseDouble(sizeList.get(i));
@@ -77,7 +93,7 @@ public class FileScreenActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        startActivity(new Intent(this ,Home.class));
-        finish();
+//        startActivity(new Intent(this ,Home.class));
+//        finish();
     }
 }

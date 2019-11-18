@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.MediaMetadataRetriever;
@@ -42,6 +43,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -197,6 +199,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     Button framesButton;
     FramesHelper framesHelper;
     WebView webView;
+    ImageButton backButton;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -234,6 +237,15 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         webView.setWebViewClient(new WebViewClient());
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        backButton = (ImageButton) findViewById(R.id.back);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SavingActivity.super.onBackPressed();
+            }
+        });
+
+
 
         // bedefault show videoview & hide wordcloud
         webView.setVisibility(View.GONE);
@@ -252,15 +264,18 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         // got the keyWordListString
                         String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(map);
                         String redundantValuesListString = wordCloudHelper.getStringOfImportanceValues(redundantKeywordListString);
-                        String keywordListString = wordCloudHelper.getTop10Keywords(redundantKeywordListString);
-                        String valuesListString = wordCloudHelper.getTop10Values(redundantValuesListString);
+                        Log.v("nuttygeek_top", redundantKeywordListString+ " - "+redundantValuesListString);
+//                        String keywordListString = wordCloudHelper.getTop10Keywords(redundantKeywordListString).replace("\'", "").replace("`", "");
+//                        String valuesListString = wordCloudHelper.getTop10Values(redundantValuesListString).replace("\'", "").replace("`", "");;
+//                        Log.v("nuttygeek_top", keywordListString+ " - "+valuesListString);
 
                         //TODO: get filtered keywords list
-//                        String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString);
-//                        Log.v("nuttygeek_combined", combinedString);
-//                        String [] stringParts = combinedString.split("-:-");
-//                        String keywordListString = stringParts[0];
-//                        String valuesListString = stringParts[1];
+                        String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString)
+                                .replace("`", "").replace("'", "").replace(".", "");
+                        Log.v("nuttygeek_combined", combinedString);
+                        String [] stringParts = combinedString.split("-:-");
+                        String keywordListString = stringParts[0];
+                        String valuesListString = stringParts[1];
 
                         // pass it to webview
                         webView.addJavascriptInterface(new JavaScriptAction(SavingActivity.this, new OnWordClicked() {
@@ -301,8 +316,13 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                             }
                         }), "JSAction");
                         webView.loadUrl("file:///android_asset/wordcloud.html");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE))
+                            { WebView.setWebContentsDebuggingEnabled(true); }
+                        }
                         webView.setWebViewClient(new WebViewClient(){
                             public void onPageFinished(WebView view, String url){
+                                Log.v("nuttygeek_keywords", keywordListString+ " : "+valuesListString);
                                 webView.loadUrl("javascript:handleData('"+keywordListString+"', '"+valuesListString+"')");
                             }
                         });

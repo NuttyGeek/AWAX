@@ -177,6 +177,7 @@ public class Home extends AppCompatActivity
         btnCamera.setOnClickListener(v -> {
 
 //            new AlertDialog.Builder(this, R.style.MyDialogTheme)
+//            new AlertDialog.Builder(this, R.style.MyDialogTheme)
 //                    .setTitle("Alert")
 //                    .setMessage("User can select the video Resolution from there Phone Settings before start capturing video")
 //                    .setPositiveButton("OK", (dialog, which) -> {
@@ -199,7 +200,7 @@ public class Home extends AppCompatActivity
         });
         btnFiles.setOnClickListener(v -> {
             startActivity(new Intent(Home.this, FileScreenActivity.class));
-            finish();
+//            finish();
         });
         list = new ArrayList<>();
         timer = new Timer();

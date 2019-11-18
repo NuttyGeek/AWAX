@@ -88,6 +88,7 @@ public class WordCloudHelper {
      * @return strign list of keywords seperated by comma ( , )
      */
     public String getStringOfKeywords(HashMap<String, JSONArray> map) throws JSONException {
+        // if the keyword is already in keywordStr don't add it on keywordsStr
         String keywordsStr = "";
         for(HashMap.Entry<String, JSONArray> entry: map.entrySet()){
             JSONArray keywordArr = entry.getValue();
@@ -95,10 +96,20 @@ public class WordCloudHelper {
                 // if it is last item don't add comma
                 if(i==keywordArr.length()-1){
                     String tempStr = keywordArr.get(i).toString();
-                    keywordsStr += tempStr;
+                    if(!keywordsStr.contains(tempStr)) {
+                        Log.v("nuttygeek_double",tempStr + " is not in "+keywordsStr);
+                        keywordsStr += tempStr;
+                    }else{
+                        Log.v("nuttygeek_double",tempStr + " is already in "+keywordsStr);
+                    }
                 }else{
                     String tempStr = keywordArr.get(i).toString()+",";
-                    keywordsStr += tempStr;
+                    if(!keywordsStr.contains(tempStr)){
+                        Log.v("nuttygeek_double",tempStr + " is not in "+keywordsStr);
+                        keywordsStr += tempStr;
+                    }else{
+                        Log.v("nuttygeek_double",tempStr + " is already in "+keywordsStr);
+                    }
                 }
             }
         }
@@ -110,6 +121,7 @@ public class WordCloudHelper {
      * @return string
      */
     public String getStringOfImportanceValues(String keywordsString){
+        // if the keywords is already in valuesStr don'' add it again
         String valuesStr = "";
         int normalValue = 1;
         int labelValue = 5;
@@ -326,8 +338,7 @@ public class WordCloudHelper {
         for(int i=0; i<keywords.length; i++){
             String keyword = keywords[i];
             String value = values[i];
-            // if it is last item don'' add comma
-            if(!value.equals("1")){
+            // if it is last item don't add comma
                 if(i==keywords.length-1){
                     keywordsStr += keyword;
                     valueStr += value;
@@ -335,12 +346,8 @@ public class WordCloudHelper {
                     keywordsStr += keyword+",";
                     valueStr += value+",";
                 }
-            }else{
-                Log.v("nuttygeek_one", "keyword: "+keyword+ " value: "+value +" : value is 1 so, it is not added in wordcloud ");
-            }
         }
         String finalRes = keywordsStr+"-:-"+valueStr;
-
         return finalRes;
     }
 

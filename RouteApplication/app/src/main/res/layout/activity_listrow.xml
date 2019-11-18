@@ -6,12 +6,21 @@
     android:weightSum="2"
     android:padding="4dp" >
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:src="@drawable/ic_keyboard_backspace"
+        android:background="#fff"
+        android:padding="10dp"
+        android:id="@+id/back"
+        android:layout_height="wrap_content"/>
+
     <!-- Views with default image and text, for demonstration.
     They will be changed in the adapter -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="chumk"
+        android:textAlignment="center"
         android:layout_weight="1"
         android:textColor="#000000"
         android:id="@+id/rowchumk"
@@ -22,6 +31,7 @@
         android:layout_height="wrap_content"
         android:text="title"
         android:textColor="#000000"
+        android:textAlignment="center"
         android:layout_weight="1"
         android:id="@+id/rowcolor"
         android:layout_gravity="center_vertical" />
