@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.anychart.chart.common.dataentry.CategoryValueDataEntry;
 import com.anychart.chart.common.dataentry.DataEntry;
+import com.example.bhati.routeapplication.Model.ColorText;
 import com.google.android.flexbox.FlexboxLayout;
 
 import org.json.JSONArray;
@@ -308,18 +309,24 @@ public class WordCloudHelper {
      * @param map full map
      * @return index of the keyword
      */
-    public int getAudioChunkIndexFromKeyword(String keyword, HashMap<String, JSONArray> map) throws JSONException {
+    public ArrayList<Integer> getAudioChunkIndexFromKeyword(String keyword, HashMap<String, JSONArray> map) throws JSONException {
+        ArrayList<Integer> indexes = new ArrayList<>();
         for(HashMap.Entry<String, JSONArray> entry: map.entrySet()){
             String chunkName = entry.getKey();
             int indexFromChunkName = Integer.parseInt(chunkName.replace("chunk", ""));
             JSONArray keywordsArr= entry.getValue();
             for(int i=0; i<keywordsArr.length(); i++){
                 if(keyword.equals(keywordsArr.get(i).toString())){
-                    return indexFromChunkName;
+                    indexes.add(indexFromChunkName);
                 }
             }
         }
-        return 0;
+        if(indexes==null){
+            indexes.add(0);
+            return indexes;
+        }else{
+            return indexes;
+        }
     }
 
 
@@ -397,5 +404,21 @@ public class WordCloudHelper {
         }
         return result;
     }
+
+    /**
+     * this fxn returns the sentences from the given indexes
+     * @param list list of integers values
+     * @param colorTextList list of colortextlist
+     * @return String of sentences to be shown on bottom sheet as it is
+     */
+    public String getSentencesFromIndexes(ArrayList<Integer> list, ArrayList<ColorText> colorTextList){
+        String sentence = "";
+        for(Integer i: list){
+            sentence += colorTextList.get(i).getText()+ "\n\n";
+        }
+        return sentence;
+    }
+
+
 
 }

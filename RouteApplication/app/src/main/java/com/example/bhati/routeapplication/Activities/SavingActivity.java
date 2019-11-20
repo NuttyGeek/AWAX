@@ -59,6 +59,7 @@ import com.example.bhati.routeapplication.Database.DBHelper;
 import com.example.bhati.routeapplication.Interface.OnKeywordsReady;
 import com.example.bhati.routeapplication.Interface.OnMarkerReadyListener;
 import com.example.bhati.routeapplication.Interface.OnWordClicked;
+import com.example.bhati.routeapplication.Model.BottomSheetDialog;
 import com.example.bhati.routeapplication.Model.ColorText;
 import com.example.bhati.routeapplication.Model.Recorder;
 import com.example.bhati.routeapplication.MyAppl;
@@ -271,7 +272,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
                         //TODO: get filtered keywords list
                         String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString)
-                                .replace("`", "").replace("'", "").replace(".", "");
+                                .replace("`", "").replace("'", "").replace(".", "").replace("I", "");
                         Log.v("nuttygeek_combined", combinedString);
                         String [] stringParts = combinedString.split("-:-");
                         String keywordListString = stringParts[0];
@@ -281,13 +282,21 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         webView.addJavascriptInterface(new JavaScriptAction(SavingActivity.this, new OnWordClicked() {
                             @Override
                             public void onClick(String keyword) {
-                                // when clicked on word cloud word
-                                Toast.makeText(SavingActivity.this, keyword, Toast.LENGTH_SHORT).show();
-                                // move the map marker
-                                // HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
                                 try{
-                                    int index = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, map);
-                                    LatLng point = properties.firstCoordinatesOfPolylines.get(index);
+                                    ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, map);
+                                    // get sentences from indexes
+                                    String sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
+                                    Log.v("nuttygeek_index", "index: "+indexes.toString());
+                                    // showing the bottom sheet with content in it
+                                    BottomSheetDialog dialog = new BottomSheetDialog(sentences, keyword);
+                                    dialog.show(getSupportFragmentManager(), "bottom_sheet");
+
+                                    int index = indexes.get(0);
+                                    // when clicked on word cloud word
+                                    // Toast.makeText(SavingActivity.this, keyword, Toast.LENGTH_SHORT).show();
+                                    // move the map marker
+                                    // HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
+                                        LatLng point = properties.firstCoordinatesOfPolylines.get(index);
                                     // Log.v("ngt_wordcloudlist","point: "+point.toString()+" smallestDistance: "+smallestDistance+" list: "+list.toString()+ " closestLocation: "+closestLocation.toString());
                                     mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
                                     Log.v("nuttygeek_click", "simulating map click");
