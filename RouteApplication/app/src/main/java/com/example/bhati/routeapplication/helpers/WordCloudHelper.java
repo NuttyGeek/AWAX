@@ -318,10 +318,11 @@ public class WordCloudHelper {
             for(int i=0; i<keywordsArr.length(); i++){
                 if(keyword.equals(keywordsArr.get(i).toString())){
                     indexes.add(indexFromChunkName);
+                    break;
                 }
             }
         }
-        if(indexes==null){
+        if(indexes.size()==0){
             indexes.add(0);
             return indexes;
         }else{

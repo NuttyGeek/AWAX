@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,29 +8,26 @@
     android:orientation="vertical"
     tools:context=".Activities.SavingActivity">
 
+<!--     page content -->
     <LinearLayout
         android:layout_width="match_parent"
+        android:id="@+id/page_content"
+        android:weightSum="2"
+        android:paddingBottom="50dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
         android:orientation="vertical">
+
+        <!-- map layout  -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_weight="1"
+            android:id="@+id/mapLayout"
             android:layout_height="match_parent">
-
-            <!-- map view-->
+        <!-- map view-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:src="@drawable/ic_keyboard_backspace"
-                    android:padding="15dp"
-                    android:id="@+id/back"
-                    android:clickable="true"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:layout_height="wrap_content"/>
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -65,11 +62,12 @@
 
             </LinearLayout>
             <!--menu -->
+            <!-- color list -->
             <LinearLayout
                 android:layout_width="40dp"
                 android:id="@+id/menu"
                 android:layout_marginLeft="5dp"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="10dp"
                 android:orientation="vertical"
                 android:background="@color/white"
                 android:layout_height="wrap_content">
@@ -98,7 +96,7 @@
             </LinearLayout>
 
             <ToggleButton
-                android:id="@+id/word_cloud"
+                android:id="@+id/toggle_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textOff="Video"
@@ -113,11 +111,12 @@
 
         </RelativeLayout>
 
-        <!--video player-->
+        <!-- video player -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:id="@+id/videoPlayerLayout"
             android:orientation="vertical">
 
             <FrameLayout
@@ -168,35 +167,28 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content" />
             </FrameLayout>
-<!--            <ScrollView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent">-->
-<!--                <com.google.android.flexbox.FlexboxLayout-->
-<!--                    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--                    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_margin="20dp"-->
-<!--                    android:id="@+id/flexbox"-->
-<!--                    android:gravity="center_vertical"-->
-<!--                    app:flexWrap="wrap"-->
-<!--                    app:alignItems="center"-->
-<!--                    >-->
-<!--                </com.google.android.flexbox.FlexboxLayout>-->
-<!--            </ScrollView>-->
+        </LinearLayout>
+
+<!--         webview layout-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:id="@+id/webViewLayout"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
             <WebView
                 android:layout_width="match_parent"
                 android:id="@+id/webView"
                 android:layout_height="match_parent"/>
         </LinearLayout>
 
-        <!-- button layout-->
+        <!-- button layout -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="1.62"
-            android:id="@+id/text_speech_layout"
+            android:layout_weight="0.2"
+            android:id="@+id/buttons_layout"
             android:weightSum="3"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
@@ -237,4 +229,39 @@
                 android:textColor="@color/white" />
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+
+<!--  horizontal tabs-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="match_parent"
+            android:text="Video"
+            android:id="@+id/videoTab"
+            android:background="@color/white"
+            android:layout_weight="1"
+            android:onClick="tabClicked"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:layout_width="match_parent"
+            android:text="Segment"
+            android:layout_weight="1"
+            android:background="@color/white"
+            android:onClick="tabClicked"
+            android:id="@+id/segmentTab"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:text="Semantics"
+            android:background="@color/white"
+            android:id="@+id/semanticsTab"
+            android:onClick="tabClicked"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+
+</RelativeLayout>
