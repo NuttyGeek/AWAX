@@ -22,8 +22,10 @@ public class properties
     public static HashMap<String,String> audiodata =  new HashMap<String, String>();
     public static String Server_IP="192.168.43.205";
     public static ArrayList<LatLng> firstCoordinatesOfPolylines = new ArrayList<>();
+    public static ArrayList<List<LatLng>> polylines = new ArrayList<>();
     // interval for frame extraction
     public static int REGULAR_FRAME_INTERVAL_MILLIS = 5000;
+    public static ArrayList<String> audioPaths = new ArrayList<>();
 
     public static String email = "admin@admin.com";
     public static String password = "adminadmin";

@@ -76,6 +76,9 @@ import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 import com.google.android.flexbox.FlexboxLayout;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -85,6 +88,7 @@ import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -94,6 +98,10 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.SimpleMultiPartRequest;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.Property;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -123,6 +131,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SavingActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback /*, LocationEngineListener*/ {
 
+
+    private com.mapbox.mapboxsdk.annotations.PolylineOptions plo;
     private Polyline currentPolyline;
     String videoUri;
     private MapView mapView;
@@ -206,6 +216,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     int[] tabIds = {R.id.videoTab, R.id.segmentTab, R.id.semanticsTab};
     LinearLayout videoLayout, webViewLayout, buttonsLayout;
     RelativeLayout mapLayout;
+
+    Polyline highlightedPoyline;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -600,34 +612,22 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 {
                     Toast.makeText(SavingActivity.this,"string is empty", Toast.LENGTH_LONG).show();
                     Toast.makeText(SavingActivity.this, "file is"+filePath, Toast.LENGTH_SHORT).show();
-
-//                    AlertDialog.Builder builder = new AlertDialog.Builder(SavingActivity.this);
-//                    builder.setTitle("Enter Server Ip:");
-
-// Set up the input
-//                    final EditText input = new EditText(SavingActivity.this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-//                    input.setInputType(InputType.TYPE_CLASS_TEXT);
-//                    builder.setView(input);
-//                    builder.setCancelable(false);
-
-// Set up the buttons
-//                    builder.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-                    // properties.Server_IP = input.getText().toString();
-                    // Pattern PATTERN = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-                    // if(PATTERN.matcher(properties.Server_IP).matches())
-                    //{
                     ct = 0;
                     String filter=filePath.substring(0,filePath.length()-4);
                     ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
+                    if(properties.audioPaths.size() ==0){
+                        for(int i=0; i<chumkfiles.size(); i++){
+                            Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+                            properties.audioPaths.add(chumkfiles.get(i));
+                        }
+                    }
 //                              for every audio chunk file do this
                     for(int i = 0;i<chumkfiles.size();i++)
                     {
                         try {
 //                                      get the individual file path
                             String filePath =  Environment.getExternalStorageDirectory() + "/RouteApp/"+chumkfiles.get(i);
+                            Log.v("nuttygeek_audio_paths", filePath);
 //                                      upload it to server
                             chumkUpload(filePath,chumkfiles.size());
                         }catch (Exception ex)
@@ -635,28 +635,19 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                             Log.d("CHUMKEXP:","Error:",ex);
                         }
                     }
-                    //Toast.makeText(SavingActivity.this, ct+" of "+chumkfiles.size(), Toast.LENGTH_SHORT).show();
-
-                    // }else
-                    // {
-                    //     Toast.makeText(SavingActivity.this, "Ip Invalid!", Toast.LENGTH_SHORT).show();
-                    // }
-
-                    // }
-                    // });
-                    //builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    //  @Override
-                    //    public void onClick(DialogInterface dialog, int which) {
-                    //        dialog.cancel();
-                    //    }
-//                    });
-
-//                    builder.show();
 //region getting actual text from speech
-                }else{
-//                  if result is already present
-                    if(speech.contains("@"))
-                    {
+                }else if(speech.contains("@")) {
+                        // ***************** testing something ************************
+                        String filter=filePath.substring(0,filePath.length()-4);
+                        ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
+                        // if the audio paths are empty add the paths to taht arraylist
+                        if(properties.audioPaths.size() ==0){
+                            for(int i=0; i<chumkfiles.size(); i++){
+                                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+                                properties.audioPaths.add(chumkfiles.get(i));
+                            }
+                        }
+                        // *****************  end of testing **************************
                         Toast.makeText(SavingActivity.this, "speech contains @ ", Toast.LENGTH_LONG).show();
                         try
                         {
@@ -692,17 +683,12 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                             Log.d("STSEXP:","after text",ex);
                         }
                     }
-                }
 
-                //new LongOperation().execute();
-                //Toast.makeText(getApplicationContext(), "Purchase Api", Toast.LENGTH_SHORT).show();
-                //normalizeFile();
             }
         });
 //        endregion
         Readlatlng();
 //        intentionally removed
-        //showAccuracyDialogue();
 //region creating map markers
         IconFactory iconFactory = IconFactory.getInstance(SavingActivity.this);
         icon_strt = iconFactory.fromResource(R.drawable.marker_red);
@@ -711,16 +697,12 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     }
 //    endregion
 
-    public String GetText(String files)
-    {
-        try
-        {
+    public String GetText(String files) {
+        try {
             // Create data variable for sent values to server
             //String data = URLEncoder.encode("files", "UTF-8")+ "=" + URLEncoder.encode(files, "UTF-8");
-
             String text = "";
             BufferedReader reader=null;
-
             // Send data
             try
             {
@@ -1066,17 +1048,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         map = mapboxMap;
-        /*
-        map.setOnPolylineClickListener(new MapboxMap.OnPolylineClickListener() {
-            @Override
-            public void onPolylineClick(@NonNull Polyline polyline) {
-                int strokeColor = polyline.getColor() ^ 0x0000CC00;
-                polyline.setColor(strokeColor);
-                polyline.getPoints();
-                Log.e("TAG", "Polyline points @ " + polyline.getPoints());
-                Toast.makeText(SavingActivity.this, "Polyline click: " + polyline.getPoints(), Toast.LENGTH_LONG).show();
-            }
-        });*/
 
         if (list != null) {
             properties.colorsdata = new ArrayList<String>();
@@ -1154,6 +1125,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 .icon(icon)
                 .snippet(latLng + "")
                 .title("Start point"));
+
     }
 
     private void addMarkerEndPoint(LatLng latLng) {
@@ -1176,6 +1148,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 .alpha(1f)
                 .addAll(latLngList));
     }
+
 //    endregion
 
     @SuppressLint("NewApi")
@@ -1838,16 +1811,41 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      * @param latLngList latlng list to be drawn on map
      * @param ct no of color
      */
-    public void addOverLayPlouline(List<LatLng> latLngList,int ct) {
+    public void addOverLayPlouline(List<LatLng> latLngList, int ct, boolean first) {
         // get the first coordinate from latlng list, add it to a list on properties class
-        properties.firstCoordinatesOfPolylines.add(latLngList.get(0));
-        //doing it coz, ct starts from 1
-        PolylineOptions lineOptions = new PolylineOptions();
-        map.addPolyline(lineOptions
-                .width(10f)
-                //.color(Color.parseColor(properties.colorsdata.get(ct)))
-                .color(Color.parseColor(properties.colorsdata.get(ct)))
-                .addAll(latLngList));
+        if(!first){
+            // if it is not the first time that means it is being drawn because of word cloud click
+            //doing it coz, ct starts from 1
+            PolylineOptions lineOptions = new PolylineOptions();
+            Polyline polylineAdded = map.addPolyline(lineOptions
+                    .width(20f)
+                    //.color(Color.parseColor(properties.colorsdata.get(ct)))
+                    .color(Color.BLACK)
+                    .addAll(latLngList));
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    polylineAdded.remove();
+                }
+            }, 5000);
+            Log.v("nuttygeek_added", polylineAdded.toString());
+        }else{
+            properties.firstCoordinatesOfPolylines.add(latLngList.get(0));
+            properties.polylines.add(latLngList);
+            PolylineOptions lineOptions = new PolylineOptions();
+            Polyline polylineAdded = map.addPolyline(lineOptions
+                    .width(10f)
+                    .color(Color.parseColor(properties.colorsdata.get(ct)))
+                    .addAll(latLngList));
+            Log.v("nuttygeek_added", polylineAdded.toString());
+            // trying to remove polyline
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    polylineAdded.remove();
+//                }
+//            }, 5000);
+        }
     }
 //   endregion
 
@@ -1885,7 +1883,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         for (int k = 0; k < lists_pollline.size(); k++) {
             Log.d("ListLatitude", "size" + k);
             Log.d("ListLatitude", "size" + lists_pollline.get(k));
-            addOverLayPlouline(lists_pollline.get(k),j);
+            addOverLayPlouline(lists_pollline.get(k),j, true);
             if(j==ctotal-1) {
                 j=0;
             }else {
@@ -2079,11 +2077,11 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         // enable wordCloud UI
         // now read the shared and do the stuff
         wordCloudHelper = new WordCloudHelper(SavingActivity.this);
-        HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
-        Log.v("nuttygeek_map", map.toString());
+        HashMap<String, JSONArray> hashmap = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
+        Log.v("nuttygeek_map", hashmap.toString());
         try{
             // got the keyWordListString
-            String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(map);
+            String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(hashmap);
             String redundantValuesListString = wordCloudHelper.getStringOfImportanceValues(redundantKeywordListString);
             Log.v("nuttygeek_top", redundantKeywordListString+ " - "+redundantValuesListString);
 //                        String keywordListString = wordCloudHelper.getTop10Keywords(redundantKeywordListString).replace("\'", "").replace("`", "");
@@ -2102,41 +2100,67 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 @Override
                 public void onClick(String keyword) {
                     try{
-                        ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, map);
+                        ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, hashmap);
                         // get sentences from indexes
                         String sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
                         Log.v("nuttygeek_index", "index: "+indexes.toString());
                         // showing the bottom sheet with content in it
+                        Log.v("nuttygeek_sheet", "sentences: "+sentences+ " keyword: "+keyword);
                         BottomSheetDialog dialog = new BottomSheetDialog(sentences, keyword);
                         dialog.show(getSupportFragmentManager(), "bottom_sheet");
-
+                        Log.v("nuttygeek_ap", properties.audioPaths.toString());
                         int index = indexes.get(0);
+                        // get the polyline related with the keyword selected
+                        List<LatLng> relatedPolyline = properties.polylines.get(index);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // if the highlight polyline is being drawn for the second time
+                                if(highlightedPoyline!=null){
+                                    highlightedPoyline.remove();
+                                    highlightedPoyline = null;
+                                    highlightedPoyline = map.addPolyline(new PolylineOptions()
+                                            .width(20f)
+                                            .addAll(relatedPolyline)
+                                            .color(Color.BLACK));
+                                }else{
+                                    highlightedPoyline = map.addPolyline(new PolylineOptions()
+                                            .width(20f)
+                                            .addAll(relatedPolyline)
+                                            .color(Color.BLACK));
+                                }
+                            }
+                        });
+
                         // when clicked on word cloud word
                         // Toast.makeText(SavingActivity.this, keyword, Toast.LENGTH_SHORT).show();
                         // move the map marker
                         // HashMap<String, JSONArray> map = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
-                        LatLng point = properties.firstCoordinatesOfPolylines.get(index);
+                        // LatLng point = properties.firstCoordinatesOfPolylines.get(index);
+
+
+
                         // Log.v("ngt_wordcloudlist","point: "+point.toString()+" smallestDistance: "+smallestDistance+" list: "+list.toString()+ " closestLocation: "+closestLocation.toString());
-                        mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
-                        Log.v("nuttygeek_click", "simulating map click");
-                        mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
-                            @Override
-                            public void onSuccess(double smallestDistance, LatLng latlng, int position) {
-                                Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
-                                Log.v("nuttygeek_mapmap", "smalestDistance: "+smallestDistance+ " latlng: "+latlng+ " position: "+position);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        addMarkerNew(smallestDistance, latlng, position);
-                                    }
-                                });
-                            }
-                            @Override
-                            public void onFailure() {
-                                Log.v("nuttygeek_mapmap", "map click simulation not successful");
-                                Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+//                        mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
+//                        Log.v("nuttygeek_click", "simulating map click");
+//                        mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
+//                            @Override
+//                            public void onSuccess(double smallestDistance, LatLng latlng, int position) {
+//                                Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+//                                Log.v("nuttygeek_mapmap", "smalestDistance: "+smallestDistance+ " latlng: "+latlng+ " position: "+position);
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        addMarkerNew(smallestDistance, latlng, position);
+//                                    }
+//                                });
+//                            }
+//                            @Override
+//                            public void onFailure() {
+//                                Log.v("nuttygeek_mapmap", "map click simulation not successful");
+//                                Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
                     }catch(Exception e){
                         Log.v("ngt_error", "error: "+e.getMessage());
                         e.printStackTrace();
