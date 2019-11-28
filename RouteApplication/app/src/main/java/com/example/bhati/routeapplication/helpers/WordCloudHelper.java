@@ -408,16 +408,29 @@ public class WordCloudHelper {
 
     /**
      * this fxn returns the sentences from the given indexes
-     * @param list list of integers values
+     * @param indexes list of iindexes to extract
      * @param colorTextList list of colortextlist
      * @return String of sentences to be shown on bottom sheet as it is
      */
-    public String getSentencesFromIndexes(ArrayList<Integer> list, ArrayList<ColorText> colorTextList){
-        String sentence = "";
-        for(Integer i: list){
-            sentence += colorTextList.get(i).getText()+ "\n\n";
+    public ArrayList<String> getSentencesFromIndexes(ArrayList<Integer> indexes, ArrayList<ColorText> colorTextList){
+        ArrayList<String> sentences = new ArrayList<>();
+        for(Integer index: indexes){
+            sentences.add(colorTextList.get(index).getText());
         }
-        return sentence;
+        return sentences;
+    }
+
+    /**
+     * this fxn returns the audio paths according to the indexes got
+     * @param indexes indexes to select
+     * @return list of audio paths
+     */
+    public ArrayList<String> getAudioPathsFromIndexes(ArrayList<Integer> indexes, ArrayList<String> paths){
+        ArrayList<String> resultList = new ArrayList<>();
+        for(Integer index: indexes){
+            resultList.add(paths.get(index));
+        }
+        return resultList;
     }
 
 

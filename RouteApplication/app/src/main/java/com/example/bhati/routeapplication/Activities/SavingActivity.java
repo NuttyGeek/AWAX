@@ -2102,13 +2102,16 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     try{
                         ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, hashmap);
                         // get sentences from indexes
-                        String sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
-                        Log.v("nuttygeek_index", "index: "+indexes.toString());
-                        // showing the bottom sheet with content in it
-                        Log.v("nuttygeek_sheet", "sentences: "+sentences+ " keyword: "+keyword);
-                        BottomSheetDialog dialog = new BottomSheetDialog(sentences, keyword);
+                        ArrayList<String> sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
+                        Log.v("nuttygeek_sen", sentences.toString());
+                        ArrayList<String> audioPaths = wordCloudHelper.getAudioPathsFromIndexes(indexes, properties.audioPaths);
+                        Log.v("nuttygeek_aud", audioPaths.toString());
+                        BottomSheetDialog dialog = new BottomSheetDialog(SavingActivity.this, keyword, sentences,
+                                audioPaths);
                         dialog.show(getSupportFragmentManager(), "bottom_sheet");
                         Log.v("nuttygeek_ap", properties.audioPaths.toString());
+
+                        // right now I am showing only one polyline highlighted
                         int index = indexes.get(0);
                         // get the polyline related with the keyword selected
                         List<LatLng> relatedPolyline = properties.polylines.get(index);

@@ -12,14 +12,9 @@
         android:text="Selected Word is used in these sentences :"
         android:layout_height="wrap_content"/>
 
-    <TextView
+    <ListView
         android:layout_width="match_parent"
-        android:text="Bottom Sheet"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        android:id="@+id/sentences"
+        android:id="@+id/listView"
         android:layout_height="wrap_content"/>
 
 </LinearLayout>
