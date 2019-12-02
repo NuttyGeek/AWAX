@@ -14,6 +14,7 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.MediaMetadataRetriever;
+import android.net.IpSecManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -56,6 +57,8 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.widget.VideoView;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.example.bhati.routeapplication.Database.DBHelper;
 import com.example.bhati.routeapplication.Interface.OnKeywordsReady;
 import com.example.bhati.routeapplication.Interface.OnMarkerReadyListener;
@@ -139,8 +142,10 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private MapboxMap map;
     public Boolean prevplay;
     private Location originLocation;
-    private Button btnUpload, btnSpeechToText;
-    ToggleButton wordCloudButton;
+    // private Button btnUpload;
+    // private Button btnSpeechToText;
+    // no need now
+    //ToggleButton wordCloudButton;
     private VideoView videoView;
     private ToggleButton btnPlay;
     private Marker currentLocationMarker;
@@ -208,16 +213,17 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private ArrayList<String> listChumktime;
     private ArrayList<String> listChumktext;
     List<List<LatLng>> lists_pollline = new ArrayList<List<LatLng>>();
-    Button framesButton;
+    // Button framesButton;
     FramesHelper framesHelper;
     WebView webView;
     ImageButton backButton;
     private Button videoTabButton, segmentTabButton, semanticTabButton;
     int[] tabIds = {R.id.videoTab, R.id.segmentTab, R.id.semanticsTab};
-    LinearLayout videoLayout, webViewLayout, buttonsLayout;
+    LinearLayout videoLayout, webViewLayout;
+    // LinearLayout  buttonsLayout;
     RelativeLayout mapLayout;
 
-    Polyline highlightedPoyline;
+    ArrayList<Polyline> highlightedPolyines;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -231,7 +237,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
         // initializing button tabs
         webViewLayout = findViewById(R.id.webViewLayout);
-        buttonsLayout = findViewById(R.id.buttons_layout);
+        // buttonsLayout = findViewById(R.id.buttons_layout);
         mapLayout = findViewById(R.id.mapLayout);
         videoLayout = findViewById(R.id.videoPlayerLayout);
         videoTabButton = findViewById(R.id.videoTab);
@@ -239,11 +245,12 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         semanticTabButton = findViewById(R.id.semanticsTab);
         // init with video tab clicked
         showVideo(R.id.videoTab);
+        highlightedPolyines = new ArrayList<>();
 
         // creating frames helper
         videoFrame = findViewById(R.id.videoFrame);
         framesHelper = new FramesHelper(this);
-        framesButton = findViewById(R.id.framesButton);
+        // framesButton = findViewById(R.id.framesButton);
         list = new ArrayList<>();
         list1 = new ArrayList<>();
         list_overlay_polyline = new ArrayList<>();
@@ -251,16 +258,16 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         initialize();
 //      region init UI
         // speechToTextLayout = findViewById(R.id.text_speech_layout);
-        btnUpload = findViewById(R.id.btnUpload);
+        // btnUpload = findViewById(R.id.btnUpload);
         progress_bar_speechto_text = findViewById(R.id.progress_bar_speechto_text);
-        btnSpeechToText = findViewById(R.id.btnSpeechToText);
+        //btnSpeechToText = findViewById(R.id.btnSpeechToText);
         seekbar_video = findViewById(R.id.seekbar_video);
         imgLogout = findViewById(R.id.logout);
         //audioImage = findViewById(R.id.menu_button);
         menuLayout = findViewById(R.id.menu);
         colorList = findViewById(R.id.color_list);
         webView = findViewById(R.id.webView);
-        wordCloudButton = findViewById(R.id.toggle_button);
+        //wordCloudButton = findViewById(R.id.toggle_button);
         // webview content
         webView = findViewById(R.id.webView);
         webView.setWebViewClient(new WebViewClient());
@@ -278,43 +285,43 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
         // bedefault show videoview & hide wordcloud
         webView.setVisibility(View.GONE);
-        wordCloudButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                // show wordCloud & hide videoView
-                if(b){
-
-                    // show semantics
-                    showSemantics(R.id.semanticsTab);
-                    videoFrame.setVisibility(View.GONE);
-
-                }else{
-                    // show videoView & hide word cloud
-                    webView.setVisibility(View.GONE);
-                    videoFrame.setVisibility(View.VISIBLE);
-                }
-            }
-        });
+//        wordCloudButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//                // show wordCloud & hide videoView
+//                if(b){
+//
+//                    // show semantics
+//                    showSemantics(R.id.semanticsTab);
+//                    videoFrame.setVisibility(View.GONE);
+//
+//                }else{
+//                    // show videoView & hide word cloud
+//                    webView.setVisibility(View.GONE);
+//                    videoFrame.setVisibility(View.VISIBLE);
+//                }
+//            }
+//        });
 //        endregion
 
         Bundle bundle = getIntent().getBundleExtra("bundle_values");
         String afile = bundle.getString("AUDIOFILE");
         filePath = afile;
         //region frames button click listener
-        framesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // moving to new activity
-                Intent i = new Intent(SavingActivity.this, FrameTest.class);
-                i.putExtra("videoUri", videoUri);
-                i.putExtra("list", list);
-                startActivity(i);
-            }
-        });
+//        framesButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // moving to new activity
+//                Intent i = new Intent(SavingActivity.this, FrameTest.class);
+//                i.putExtra("videoUri", videoUri);
+//                i.putExtra("list", list);
+//                startActivity(i);
+//            }
+//        });
         //endregion
 
 //       region visibilities
-        btnUpload.setVisibility(View.GONE);
+        // btnUpload.setVisibility(View.GONE);
         menuLayout.setVisibility(View.GONE);
 //       endregion
 //        region init color list view
@@ -349,6 +356,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                         // showToast("keywords: "+keywords.toString());
                                         KeywordsDialog keywordsDialog = new KeywordsDialog(SavingActivity.this);
                                         String content  = keywordsDialog.convertListIntoString(keywords);
+                                        Log.v("nuttygeek_content", content);
                                         // do not show the dialog
                                         //keywordsDialog.showDialog(content);
                                         String videoName = getVideoNameFromVideoUri(videoUri);
@@ -396,8 +404,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             }
         });
 //        endregion
-        btnUpload.setOnClickListener(v -> {
-        });
+//        btnUpload.setOnClickListener(v -> {
+//        });
 
         imgLogout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -517,10 +525,21 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-        if (list != null) {
+        if (list != null && list.size()!=0) {
             int n = list.size() - 1;
             point1 = list.get(0);
             point2 = list.get(n);
+        }else{
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Oops! cannot view the video ");
+            builder.setMessage("While recording this we were not able to get your location updates ");
+            builder.setPositiveButton("OKAY", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    finish();
+                }
+            });
+            Toast.makeText(this, "Your Location was not turned on while recording cannot show anything", Toast.LENGTH_LONG).show();
         }
 //region seekbar dragging functionality
         seekbar_video.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -596,96 +615,16 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //        endregion
         TestCordiate();
 // region text2speech btn click
-        btnSpeechToText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //        hiding the speech to text button layout
-                wordCloudButton.setVisibility(View.VISIBLE);
-                buttonsLayout.setVisibility(View.GONE);
-                //btnSpeechToText.setVisibility(View.GONE);
-
-                dd = new DBHelper(SavingActivity.this);
-                String speech =dd.getSpeechData(filePath);
-                Log.v("nuttygeek", "speech"+speech);
-//                if result is not already present, we have to upload the file
-                if(speech.equals(""))
-                {
-                    Toast.makeText(SavingActivity.this,"string is empty", Toast.LENGTH_LONG).show();
-                    Toast.makeText(SavingActivity.this, "file is"+filePath, Toast.LENGTH_SHORT).show();
-                    ct = 0;
-                    String filter=filePath.substring(0,filePath.length()-4);
-                    ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
-                    if(properties.audioPaths.size() ==0){
-                        for(int i=0; i<chumkfiles.size(); i++){
-                            Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
-                            properties.audioPaths.add(chumkfiles.get(i));
-                        }
-                    }
-//                              for every audio chunk file do this
-                    for(int i = 0;i<chumkfiles.size();i++)
-                    {
-                        try {
-//                                      get the individual file path
-                            String filePath =  Environment.getExternalStorageDirectory() + "/RouteApp/"+chumkfiles.get(i);
-                            Log.v("nuttygeek_audio_paths", filePath);
-//                                      upload it to server
-                            chumkUpload(filePath,chumkfiles.size());
-                        }catch (Exception ex)
-                        {
-                            Log.d("CHUMKEXP:","Error:",ex);
-                        }
-                    }
-//region getting actual text from speech
-                }else if(speech.contains("@")) {
-                        // ***************** testing something ************************
-                        String filter=filePath.substring(0,filePath.length()-4);
-                        ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
-                        // if the audio paths are empty add the paths to taht arraylist
-                        if(properties.audioPaths.size() ==0){
-                            for(int i=0; i<chumkfiles.size(); i++){
-                                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
-                                properties.audioPaths.add(chumkfiles.get(i));
-                            }
-                        }
-                        // *****************  end of testing **************************
-                        Toast.makeText(SavingActivity.this, "speech contains @ ", Toast.LENGTH_LONG).show();
-                        try
-                        {
-                            String[] separatedata = speech.split("@");
-                            listChumktext = new ArrayList<String>();
-                            listChumktime = new ArrayList<String>();
-                            separatedata[0]=separatedata[0].toString().substring(0,separatedata[0].toString().length()-1);
-                            separatedata[1]=separatedata[1].toString().substring(1,separatedata[1].toString().length()-1);
-                            String[] textdata=separatedata[0].split(":");
-                            String[] chumkdata=separatedata[1].split(":");
-                            if(textdata.length>0 && chumkdata.length>0)
-                            {
-                                for(int i =0;i<textdata.length;i++)
-                                {
-                                    String temp = chumkdata[i];
-                                    String[] tempdata=temp.split("_");
-                                    String chumk=tempdata[1]+"_chunk_"+tempdata[4];
-                                    //String chumk=tempdata[1]+"_"+tempdata[2]+"-to-"+tempdata[3]+"_chunk no:"+tempdata[4];
-//                                  getting actual data
-                                    listChumktext.add(textdata[i]);
-                                    listChumktime.add(chumk);
-                                }
-                                Log.v("nuttygeek","list chunk: (0) "+listChumktext.get(0).toString());
-                            }
-//                          testing
-                            showColorList(null, null);
-                            //ShowAlertDialogList();
-                            //ShowAlertDialogWithListview();
-//                           endregion
-
-                        }catch (Exception ex)
-                        {
-                            Log.d("STSEXP:","after text",ex);
-                        }
-                    }
-
-            }
-        });
+//        btnSpeechToText.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //        hiding the speech to text button layout
+//                //wordCloudButton.setVisibility(View.VISIBLE);
+//                // buttonsLayout.setVisibility(View.GONE);
+//                //btnSpeechToText.setVisibility(View.GONE);
+//
+//            }
+//        });
 //        endregion
         Readlatlng();
 //        intentionally removed
@@ -706,6 +645,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             // Send data
             try
             {
+                Log.v("nuttygeek_gt", "getting text: "+Config.SPEECH_TO_TEXT_URL+files.substring(0,files.length()-4));
                 // Defined URL  where to send data
                 URL url = new URL(Config.SPEECH_TO_TEXT_URL+files.substring(0,files.length()-4));
                 // Send POST data request
@@ -952,6 +892,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
     // region uploading chunks
     private void chumkUpload(final String imagePath,final int sizes) {
+        Log.v("nuttygeek_chum", "inside chunk upload function");
         SimpleMultiPartRequest smr = new SimpleMultiPartRequest(Request.Method.POST, Config.FILE_UPLOAD_URL,
                 new Response.Listener<String>() {
                     @Override
@@ -960,7 +901,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         try {
                             JSONObject jObj = new JSONObject(response);
                             String message = jObj.getString("message");
-                            Log.v("nuttygeek", message);
+                            Log.v("nuttygeek_msg", message);
                             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                             ct++;
                             if(ct == sizes)
@@ -977,12 +918,17 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Log.e("verr", error.getMessage());
+
                 Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
         smr.addFile("image", imagePath);
-        MyAppl.getInstance().addToRequestQueue(smr);
+        RequestQueue queue = Volley.newRequestQueue(SavingActivity.this);
+        queue.add(smr);
+        // this is not working
+        //MyAppl.getInstance().addToRequestQueue(smr);
     }
 //    endregion
 
@@ -1536,26 +1482,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             //For more, refer this link
         }
     */
-//    region unused code
-    public void intializeSox() {
-
-        new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                try {
-//                    Sox con=new Sox("");
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return "";
-            }
-
-
-        }.execute();
-    }
-//     endregion
 
     public void intialMarkerClick() {
 
@@ -1697,7 +1623,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     }
 
     /**
-     * adds marker on the mapp
+     * adds marker on the map
      * @param distance
      * @param point
      * @param i
@@ -1908,6 +1834,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             String text = textList.get(i);
             ColorText colorTextObj = new ColorText(color, text);
             mainColorTextList.add(colorTextObj);
+            Log.v("nuttygeek_cl", mainColorTextList.toString());
         }
         colorAdapter.notifyDataSetChanged();
 //      showing the menu layout
@@ -2066,6 +1993,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      * @param id
      */
     public void showSemantics(int id){
+        // start how text process
+        startSpeechToTextProcess();
         // select semantics button and unselect other tabs
         unFocusAll();
         setFocus(id);
@@ -2101,6 +2030,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 public void onClick(String keyword) {
                     try{
                         ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, hashmap);
+                        Log.v("nuttygeek_ind", indexes.toString());
                         // get sentences from indexes
                         ArrayList<String> sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
                         Log.v("nuttygeek_sen", sentences.toString());
@@ -2111,26 +2041,32 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         dialog.show(getSupportFragmentManager(), "bottom_sheet");
                         Log.v("nuttygeek_ap", properties.audioPaths.toString());
 
-                        // right now I am showing only one polyline highlighted
-                        int index = indexes.get(0);
-                        // get the polyline related with the keyword selected
-                        List<LatLng> relatedPolyline = properties.polylines.get(index);
+                        Log.v("nuttygeek_plist", highlightedPolyines.toString());
+                        // if there is some value already in highlighted list then
+                        // remove the polylines and clear the list first then do the process
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                // if the highlight polyline is being drawn for the second time
-                                if(highlightedPoyline!=null){
-                                    highlightedPoyline.remove();
-                                    highlightedPoyline = null;
-                                    highlightedPoyline = map.addPolyline(new PolylineOptions()
+                                if(highlightedPolyines.size()!=0){
+                                    for(Polyline p: highlightedPolyines){
+                                        p.remove();
+                                    }
+                                    highlightedPolyines.clear();
+                                    Log.v("nuttygeek_plist", "removed values: "+highlightedPolyines.toString());
+                                }
+                                // right now I am showing only one polyline highlighted
+                                for(int index: indexes){
+                                    Log.v("nuttygeek_ix", index+"");
+                                    List<LatLng> relatedPolyline = properties.polylines.get(index);
+                                    // if the highlight polyline is being drawn for the second time
+                                    // get the polyline related with the keyword selected
+                                    Polyline polyline = map.addPolyline(new PolylineOptions()
+                                            .width(Color.BLACK)
                                             .width(20f)
-                                            .addAll(relatedPolyline)
-                                            .color(Color.BLACK));
-                                }else{
-                                    highlightedPoyline = map.addPolyline(new PolylineOptions()
-                                            .width(20f)
-                                            .addAll(relatedPolyline)
-                                            .color(Color.BLACK));
+                                            .addAll(relatedPolyline));
+                                    highlightedPolyines.add(polyline);
+                                    Log.v("nuttygeek_plist", highlightedPolyines.toString());
                                 }
                             }
                         });
@@ -2223,6 +2159,93 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         Button btn = findViewById(id);
         btn.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         btn.setTextColor(getResources().getColor(R.color.white));
+    }
+
+
+    /**
+     * this fxn does makes uploads audio files to server and gets the sentences back from the server
+     * and poplulate the color list
+     */
+    public void startSpeechToTextProcess(){
+        dd = new DBHelper(SavingActivity.this);
+        String speech =dd.getSpeechData(filePath);
+        Log.v("nuttygeek", "speech"+speech);
+//                if result is not already present, we have to upload the file
+        if(speech.equals(""))
+        {
+            Toast.makeText(SavingActivity.this,"string is empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(SavingActivity.this, "file is"+filePath, Toast.LENGTH_SHORT).show();
+            ct = 0;
+            String filter=filePath.substring(0,filePath.length()-4);
+            ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
+            if(properties.audioPaths.size() ==0){
+                for(int i=0; i<chumkfiles.size(); i++){
+                    Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+                    properties.audioPaths.add(chumkfiles.get(i));
+                }
+            }
+//                              for every audio chunk file do this
+            for(int i = 0;i<chumkfiles.size();i++)
+            {
+                try {
+//                                      get the individual file path
+                    String filePath =  Environment.getExternalStorageDirectory() + "/RouteApp/"+chumkfiles.get(i);
+                    Log.v("nuttygeek_audio_paths", filePath);
+//                                      upload it to server
+                    chumkUpload(filePath,chumkfiles.size());
+                }catch (Exception ex)
+                {
+                    Log.d("CHUMKEXP:","Error:",ex);
+                }
+            }
+//region getting actual text from speech
+        }else if(speech.contains("@")) {
+            // ***************** testing something ************************
+            String filter=filePath.substring(0,filePath.length()-4);
+            ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
+            // if the audio paths are empty add the paths to taht arraylist
+            if(properties.audioPaths.size() ==0){
+                for(int i=0; i<chumkfiles.size(); i++){
+                    Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+                    properties.audioPaths.add(chumkfiles.get(i));
+                }
+            }
+            // *****************  end of testing **************************
+            Toast.makeText(SavingActivity.this, "speech contains @ ", Toast.LENGTH_LONG).show();
+            try
+            {
+                String[] separatedata = speech.split("@");
+                listChumktext = new ArrayList<String>();
+                listChumktime = new ArrayList<String>();
+                separatedata[0]=separatedata[0].toString().substring(0,separatedata[0].toString().length()-1);
+                separatedata[1]=separatedata[1].toString().substring(1,separatedata[1].toString().length()-1);
+                String[] textdata=separatedata[0].split(":");
+                String[] chumkdata=separatedata[1].split(":");
+                if(textdata.length>0 && chumkdata.length>0)
+                {
+                    for(int i =0;i<textdata.length;i++)
+                    {
+                        String temp = chumkdata[i];
+                        String[] tempdata=temp.split("_");
+                        String chumk=tempdata[1]+"_chunk_"+tempdata[4];
+                        //String chumk=tempdata[1]+"_"+tempdata[2]+"-to-"+tempdata[3]+"_chunk no:"+tempdata[4];
+//                                  getting actual data
+                        listChumktext.add(textdata[i]);
+                        listChumktime.add(chumk);
+                    }
+                    Log.v("nuttygeek","list chunk: (0) "+listChumktext.get(0).toString());
+                }
+//                          testing
+                showColorList(null, null);
+                //ShowAlertDialogList();
+                //ShowAlertDialogWithListview();
+//                           endregion
+
+            }catch (Exception ex)
+            {
+                Log.d("STSEXP:","after text",ex);
+            }
+        }
     }
 
 }

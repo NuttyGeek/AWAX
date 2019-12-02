@@ -15,38 +15,42 @@
     <script src="https://cdn.anychart.com/releases/8.7.0/js/anychart-core.min.js" ></script>
     <script src="https://cdn.anychart.com/releases/8.7.0/js/anychart-tag-cloud.min.js"></script>
     <script src= "http://fomart.nuttygeek.com/wordcloud.js" defer></script>
-    <script>
-        window.onload = function(){
-        }
-        // handle the value passed to javascript function
-        function handleData(keywordsStr, valueStr){
-            drawWordCloud(keywordsStr, valueStr);
-        }
+<!--    <script>-->
+<!--        window.onload = function(){-->
+<!--        }-->
+<!--        // handle the value passed to javascript function-->
+<!--        function handleData(keywordsStr, valueStr){-->
+<!--            drawWordCloud(keywordsStr, valueStr);-->
+<!--        }-->
 
-        function drawWordCloud(str, valueStr){
-            var keywords = str.split(",");
-            var values = valueStr.split(",");
-            var data = [];
-            for(var i=0; i<keywords.length; i++){
-                data[i] = {x: keywords[i], value: values[i]};
-            }
-            // create a chart and set the data
-            chart = anychart.tagCloud(data);
-            chart.title("Word Cloud");
-            chart.angles([0]);
-            chart.data(data, {mode: "by-word"});
-            // set the container id
-            chart.container("container");
-            chart.mode("spiral");
-            // initiate drawing the chart
-            chart.draw();
-            chart.listen("pointClick", function(e){
-                let text = e.point.get("x");
-                JSAction.action(text);
-                // alert(text);
-            });
-        }
-    </script>
+<!--        function drawWordCloud(str, valueStr){-->
+<!--            var keywords = str.split(",");-->
+<!--            var values = valueStr.split(",");-->
+<!--            var data = [];-->
+<!--            for(var i=0; i<keywords.length; i++){-->
+<!--                data[i] = {x: keywords[i], value: values[i]};-->
+<!--            }-->
+<!--            // create a chart and set the data-->
+<!--            chart = anychart.tagCloud(data);-->
+<!--            chart.title("Word ");-->
+<!--            //  var customColorScale = anychart.scales.linearColor();-->
+<!--            //  customColorScale.colors(["#008577"]);-->
+<!--            //  set the color scale as the color scale of the chart-->
+<!--            //  chart.colorScale(customColorScale);-->
+<!--            chart.angles([0]);-->
+<!--            chart.data(data, {mode: "by-word"});-->
+<!--            // set the container id-->
+<!--            chart.container("container");-->
+<!--            chart.mode("spiral");-->
+<!--            // initiate drawing the chart-->
+<!--            chart.draw();-->
+<!--            chart.listen("pointClick", function(e){-->
+<!--                let text = e.point.get("x");-->
+<!--                JSAction.action(text);-->
+<!--                // alert(text);-->
+<!--            });-->
+<!--        }-->
+<!--    </script>-->
 </head>
 <body>
 <div id="container">

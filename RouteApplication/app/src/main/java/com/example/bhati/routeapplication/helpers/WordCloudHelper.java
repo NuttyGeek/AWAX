@@ -95,15 +95,15 @@ public class WordCloudHelper {
             JSONArray keywordArr = entry.getValue();
             for(int i=0; i<keywordArr.length();i++){
                 // if it is last item don't add comma
-                if(i==keywordArr.length()-1){
-                    String tempStr = keywordArr.get(i).toString();
-                    if(!keywordsStr.contains(tempStr)) {
-                        Log.v("nuttygeek_double",tempStr + " is not in "+keywordsStr);
-                        keywordsStr += tempStr;
-                    }else{
-                        Log.v("nuttygeek_double",tempStr + " is already in "+keywordsStr);
-                    }
-                }else{
+//                if(i==keywordArr.length()-1){
+//                    String tempStr = keywordArr.get(i).toString();
+//                    if(!keywordsStr.contains(tempStr)) {
+//                        Log.v("nuttygeek_double",tempStr + " is not in "+keywordsStr);
+//                        keywordsStr += tempStr;
+//                    }else{
+//                        Log.v("nuttygeek_double",tempStr + " is already in "+keywordsStr);
+//                    }
+//                }else{
                     String tempStr = keywordArr.get(i).toString()+",";
                     if(!keywordsStr.contains(tempStr)){
                         Log.v("nuttygeek_double",tempStr + " is not in "+keywordsStr);
@@ -111,7 +111,6 @@ public class WordCloudHelper {
                     }else{
                         Log.v("nuttygeek_double",tempStr + " is already in "+keywordsStr);
                     }
-                }
             }
         }
         return keywordsStr;
@@ -277,7 +276,7 @@ public class WordCloudHelper {
         "rider", "car",
         "truck", "bus train",
         "motocycle"};
-        boolean valid = Arrays.asList(serverKeywords).contains(keyword);
+        boolean valid = Arrays.asList(serverKeywords).contains(keyword.trim());
         return valid;
     }
 
@@ -415,7 +414,7 @@ public class WordCloudHelper {
     public ArrayList<String> getSentencesFromIndexes(ArrayList<Integer> indexes, ArrayList<ColorText> colorTextList){
         ArrayList<String> sentences = new ArrayList<>();
         for(Integer index: indexes){
-            sentences.add(colorTextList.get(index).getText());
+            sentences.add(colorTextList.get(index).getText().replace("\"", ""));
         }
         return sentences;
     }
