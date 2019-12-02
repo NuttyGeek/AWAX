@@ -150,9 +150,11 @@ public class FrameUploadService extends IntentService {
         prefHelper = new SharedPrefHelper(getApplicationContext(), videoName);
         // get list of images in a folder
         ArrayList<Uri> imagesUri = helper.getAllImageUrisFromVideoFolder();
+        Log.v("nuttygeek_im_uris",imagesUri.toString());
         for(Uri uri: imagesUri){
             // TODO: Upload Frames one by one using Retrofit
             Log.v("nuttygeek_service", "Uri to upload: "+uri.toString());
+            //TODO: use firebase method here
             restHelper.uploadFrame(videoName, uri, imagesUri.indexOf(uri) == imagesUri.size()-1);
         }
     }

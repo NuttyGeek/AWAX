@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.bhati.routeapplication.Activities.properties;
 import com.example.bhati.routeapplication.Interface.OnFrameExtracted;
 import com.google.android.gms.vision.Frame;
 import com.squareup.okhttp.internal.framed.FrameReader;
@@ -131,42 +132,49 @@ public class FramesRestApiHelper {
         Log.v("nuttygeek_service", "videoName in get results: "+videoName);
         Map<String, String> map = new HashMap<>();
         map.put("video_name", videoName);
-        FrameUploadApiClient client = retrofit.create(FrameUploadApiClient.class);
-        Call<ResponseBody> resultCall = client.getResult(map);
-        resultCall.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.v("nuttygeek_code", "Res Code: "+response.code());
-                if(response.code() == 200){
-                    try{
-                        String result = response.body().string();
-                        Log.v("nuttygeek_res", "Response Code: "+response.code());
-                        Log.v("nuttygeek_res", "Res: \n"+result);
-                        SharedPrefHelper prefHelper = new SharedPrefHelper(context, videoName);
-                        prefHelper.saveResult(result);
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                    // if error code is 429 , sleep the thread for 10 seconds
-                }else if(response.code() == 429){
-                    try {
-                        Log.v("nuttygeek_res", "response code is: 429");
-                        Thread.sleep(10000);
-                        Log.v("nuttygeek_res", "waited for 10 seconds, fetching the result again");
-                        //calling this function again
-                        getResults(videoName);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }else{
-                    Log.v("nuttygeek_service", "Response got from server is other than 429");
-                }
-            }
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("nuttygeek_error", t.getMessage());
-            }
-        });
+        SharedPrefHelper prefHelper = new SharedPrefHelper(context, videoName);
+        // decides which fake data file to show
+        int index = properties.fakeIndex;
+        String fakeResult = new FakeObjectDetection(context).getData(index);
+        // updating the value of fake index
+        properties.fakeIndex++;
+        prefHelper.saveResult(fakeResult);
+//        FrameUploadApiClient client = retrofit.create(FrameUploadApiClient.class);
+//        Call<ResponseBody> resultCall = client.getResult(map);
+//        resultCall.enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                Log.v("nuttygeek_code", "Res Code: "+response.code());
+//                if(response.code() == 200){
+//                    try{
+//                        String result = response.body().string();
+//                        Log.v("nuttygeek_res", "Response Code: "+response.code());
+//                        Log.v("nuttygeek_res", "Res: \n"+result);
+//                        SharedPrefHelper prefHelper = new SharedPrefHelper(context, videoName);
+//                        prefHelper.saveResult(result);
+//                    }catch(Exception e){
+//                        e.printStackTrace();
+//                    }
+//                    // if error code is 429 , sleep the thread for 10 seconds
+//                }else if(response.code() == 429){
+//                    try {
+//                        Log.v("nuttygeek_res", "response code is: 429");
+//                        Thread.sleep(10000);
+//                        Log.v("nuttygeek_res", "waited for 10 seconds, fetching the result again");
+//                        //calling this function again
+//                        getResults(videoName);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }else{
+//                    Log.v("nuttygeek_service", "Response got from server is other than 429");
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                Log.e("nuttygeek_error", t.getMessage());
+//            }
+//        });
     }
 
 //    // don't know if it will be used or not

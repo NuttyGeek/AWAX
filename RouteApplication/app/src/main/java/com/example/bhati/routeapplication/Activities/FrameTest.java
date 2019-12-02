@@ -134,9 +134,12 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             loadingView.setVisibility(View.GONE);
             // show the graph & other stuff
             Log.v("nuttygeek_service", "Result is stored in shared pref");
-            helper.selectNPointsFromArrayList(10,2);
+            // selecting 2 indexes from 10
+            // not sure why is it used
+            // helper.selectNPointsFromArrayList(10,2);
             // get result from shared pref
             String result = getresultFromSharedPref();
+            Log.v("nuttygeek_fake", result);
             HashMap<String, Double> map = helper.getAggregateResultFromResultString(result);
             // draw graph from aggregate result
             drawOverAllChart(map);
@@ -160,6 +163,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                     // check if frames are uploaded
                     Log.v("nuttygeek_service", "Frames are not uploaded ");
                     // upload frames
+                    // TODO: change this thing
                     FrameUploadService.startActionUploading(getApplicationContext(),Uri.parse(this.videoUri));
                 }else{
                     loadingText.setText("Frames are not extracted ");

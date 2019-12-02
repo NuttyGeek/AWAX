@@ -142,8 +142,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private MapboxMap map;
     public Boolean prevplay;
     private Location originLocation;
-    // private Button btnUpload;
-    // private Button btnSpeechToText;
+    private Button btnUpload;
+    private Button btnSpeechToText;
     // no need now
     //ToggleButton wordCloudButton;
     private VideoView videoView;
@@ -213,14 +213,14 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     private ArrayList<String> listChumktime;
     private ArrayList<String> listChumktext;
     List<List<LatLng>> lists_pollline = new ArrayList<List<LatLng>>();
-    // Button framesButton;
+    Button framesButton;
     FramesHelper framesHelper;
     WebView webView;
     ImageButton backButton;
     private Button videoTabButton, segmentTabButton, semanticTabButton;
     int[] tabIds = {R.id.videoTab, R.id.segmentTab, R.id.semanticsTab};
     LinearLayout videoLayout, webViewLayout;
-    // LinearLayout  buttonsLayout;
+    LinearLayout  buttonsLayout;
     RelativeLayout mapLayout;
 
     ArrayList<Polyline> highlightedPolyines;
@@ -237,7 +237,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
         // initializing button tabs
         webViewLayout = findViewById(R.id.webViewLayout);
-        // buttonsLayout = findViewById(R.id.buttons_layout);
+        buttonsLayout = findViewById(R.id.buttons_layout);
         mapLayout = findViewById(R.id.mapLayout);
         videoLayout = findViewById(R.id.videoPlayerLayout);
         videoTabButton = findViewById(R.id.videoTab);
@@ -250,7 +250,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         // creating frames helper
         videoFrame = findViewById(R.id.videoFrame);
         framesHelper = new FramesHelper(this);
-        // framesButton = findViewById(R.id.framesButton);
+        framesButton = findViewById(R.id.framesButton);
         list = new ArrayList<>();
         list1 = new ArrayList<>();
         list_overlay_polyline = new ArrayList<>();
@@ -258,9 +258,9 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         initialize();
 //      region init UI
         // speechToTextLayout = findViewById(R.id.text_speech_layout);
-        // btnUpload = findViewById(R.id.btnUpload);
+        btnUpload = findViewById(R.id.btnUpload);
         progress_bar_speechto_text = findViewById(R.id.progress_bar_speechto_text);
-        //btnSpeechToText = findViewById(R.id.btnSpeechToText);
+        btnSpeechToText = findViewById(R.id.btnSpeechToText);
         seekbar_video = findViewById(R.id.seekbar_video);
         imgLogout = findViewById(R.id.logout);
         //audioImage = findViewById(R.id.menu_button);
@@ -281,9 +281,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //            }
 //        });
 
-
-
-        // bedefault show videoview & hide wordcloud
+        // be default show videoview & hide wordcloud
         webView.setVisibility(View.GONE);
 //        wordCloudButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 //            @Override
@@ -308,20 +306,23 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         String afile = bundle.getString("AUDIOFILE");
         filePath = afile;
         //region frames button click listener
-//        framesButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                // moving to new activity
-//                Intent i = new Intent(SavingActivity.this, FrameTest.class);
-//                i.putExtra("videoUri", videoUri);
-//                i.putExtra("list", list);
-//                startActivity(i);
-//            }
-//        });
+        framesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // moving to new activity
+                Intent i = new Intent(SavingActivity.this, FrameTest.class);
+                i.putExtra("videoUri", videoUri);
+                i.putExtra("list", list);
+                startActivity(i);
+            }
+        });
+        // hiding the 2 buttons
+        framesButton.setVisibility(View.GONE);
+        btnUpload.setVisibility(View.GONE);
         //endregion
 
 //       region visibilities
-        // btnUpload.setVisibility(View.GONE);
+        btnUpload.setVisibility(View.GONE);
         menuLayout.setVisibility(View.GONE);
 //       endregion
 //        region init color list view
@@ -615,16 +616,16 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //        endregion
         TestCordiate();
 // region text2speech btn click
-//        btnSpeechToText.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //        hiding the speech to text button layout
-//                //wordCloudButton.setVisibility(View.VISIBLE);
-//                // buttonsLayout.setVisibility(View.GONE);
-//                //btnSpeechToText.setVisibility(View.GONE);
-//
-//            }
-//        });
+        btnSpeechToText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //        hiding the speech to text button layout
+                //wordCloudButton.setVisibility(View.VISIBLE);
+                buttonsLayout.setVisibility(View.GONE);
+                //btnSpeechToText.setVisibility(View.GONE);
+                startSpeechToTextProcess();
+            }
+        });
 //        endregion
         Readlatlng();
 //        intentionally removed
@@ -1994,7 +1995,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      */
     public void showSemantics(int id){
         // start how text process
-        startSpeechToTextProcess();
+        // only if keywords are not stored in shared pref
+        // startSpeechToTextProcess();
         // select semantics button and unselect other tabs
         unFocusAll();
         setFocus(id);

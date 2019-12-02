@@ -267,7 +267,7 @@ public class WordCloudHelper {
      * @return boolean result
      */
     public boolean isValidLabel(String keyword){
-        String[] serverKeywords = {"road", " sidewalk", "building", "wall",
+        String[] serverKeywords = {"road", "sidewalk", "building", "wall",
         "fence", "pole",
         "traffic light",
         "traffic sign",
