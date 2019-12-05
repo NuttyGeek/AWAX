@@ -35,7 +35,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
 
     public BottomSheetDialog(Context context, String word, ArrayList<String> sentences, ArrayList<String> audioPaths){
 
-        Log.v("nuttygeek_bottom", "word: "+word+ "sentences: "+sentences.toString()+ "audioPaths: "+audioPaths.toString());
+        Log.v("nuttygeek_bottom", "word: "+word+ "\nsentences: "+sentences.toString()+ "\naudioPaths: "+audioPaths.toString());
         this.word = word;
         this.context = context;
         // convert sentences string into arraylist

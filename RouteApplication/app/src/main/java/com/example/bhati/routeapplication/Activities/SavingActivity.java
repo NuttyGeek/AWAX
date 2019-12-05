@@ -235,6 +235,11 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //endregion
         setContentView(R.layout.activity_saving);
 
+        // clear the old audio files in properties audioFiles
+        properties.audioPaths.clear();
+        // clear old polylines from singleton class
+        properties.polylines.clear();
+
         // initializing button tabs
         webViewLayout = findViewById(R.id.webViewLayout);
         buttonsLayout = findViewById(R.id.buttons_layout);
@@ -304,7 +309,9 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
         Bundle bundle = getIntent().getBundleExtra("bundle_values");
         String afile = bundle.getString("AUDIOFILE");
+        Log.v("nuttygeek_afile", afile);
         filePath = afile;
+        properties.mainAudioFileNameInSavingActivity = filePath.replace(".wav", "");
         //region frames button click listener
         framesButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -314,6 +321,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 i.putExtra("videoUri", videoUri);
                 i.putExtra("list", list);
                 startActivity(i);
+                // adding animation on activity
             }
         });
         // hiding the 2 buttons
@@ -428,6 +436,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         });
         bundle = getIntent().getBundleExtra("bundle_values");
         videoUri = bundle.getString("uri");
+        Log.v("nuttygeek_vuri", videoUri);
         str = bundle.getString("listLatLng");
         str1 = bundle.getString("listOthers");
         Log.d("RECEIVED_STRING", "IS:" + str1);
@@ -1758,6 +1767,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             Log.v("nuttygeek_added", polylineAdded.toString());
         }else{
             properties.firstCoordinatesOfPolylines.add(latLngList.get(0));
+            // clearing the old polylines
+            // properties.polylines.clear();
             properties.polylines.add(latLngList);
             PolylineOptions lineOptions = new PolylineOptions();
             Polyline polylineAdded = map.addPolyline(lineOptions
@@ -1975,7 +1986,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
     /**
      * this fxn shows the segment part of UI
-     * @param id
+     * @param id id of segment
      */
     public void showSegment(int id){
         // select segment button and unselect other tabs
@@ -2060,7 +2071,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                 // right now I am showing only one polyline highlighted
                                 for(int index: indexes){
                                     Log.v("nuttygeek_ix", index+"");
-                                    List<LatLng> relatedPolyline = properties.polylines.get(index);
+                                    ArrayList<List<LatLng>> polylines = properties.polylines;
+                                    List<LatLng> relatedPolyline = polylines.get(index);
                                     // if the highlight polyline is being drawn for the second time
                                     // get the polyline related with the keyword selected
                                     Polyline polyline = map.addPolyline(new PolylineOptions()
@@ -2180,11 +2192,10 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             ct = 0;
             String filter=filePath.substring(0,filePath.length()-4);
             ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
-            if(properties.audioPaths.size() ==0){
-                for(int i=0; i<chumkfiles.size(); i++){
-                    Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
-                    properties.audioPaths.add(chumkfiles.get(i));
-                }
+            properties.audioPaths.clear();
+            for(int i=0; i<chumkfiles.size(); i++){
+                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+                properties.audioPaths.add(chumkfiles.get(i));
             }
 //                              for every audio chunk file do this
             for(int i = 0;i<chumkfiles.size();i++)
@@ -2204,14 +2215,15 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         }else if(speech.contains("@")) {
             // ***************** testing something ************************
             String filter=filePath.substring(0,filePath.length()-4);
-            ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
-            // if the audio paths are empty add the paths to taht arraylist
-            if(properties.audioPaths.size() ==0){
-                for(int i=0; i<chumkfiles.size(); i++){
-                    Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
-                    properties.audioPaths.add(chumkfiles.get(i));
-                }
+            ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,0);
+            Log.v("nuttygeek_fs", "files searched: \n\n"+chumkfiles.toString());
+            // if the audio paths are empty add the paths to that arraylist
+            properties.audioPaths.clear();
+            for(int i=0; i<chumkfiles.size(); i++){
+                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+                properties.audioPaths.add(chumkfiles.get(i));
             }
+
             // *****************  end of testing **************************
             Toast.makeText(SavingActivity.this, "speech contains @ ", Toast.LENGTH_LONG).show();
             try
@@ -2235,7 +2247,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         listChumktext.add(textdata[i]);
                         listChumktime.add(chumk);
                     }
-                    Log.v("nuttygeek","list chunk: (0) "+listChumktext.get(0).toString());
                 }
 //                          testing
                 showColorList(null, null);
@@ -2248,6 +2259,14 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 Log.d("STSEXP:","after text",ex);
             }
         }
+    }
+
+
+    /**
+     * do everything related to segment here
+     */
+    public void startSegmentProcess(){
+
     }
 
 }

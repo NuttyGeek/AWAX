@@ -140,7 +140,7 @@ public class WordCloudHelper {
             if(i==(keywords.length-1)){
                 valuesStr += String.valueOf(value);
             }else{
-                valuesStr += (String.valueOf(value)+",");
+                valuesStr += (value+",");
             }
         }
         return valuesStr;
@@ -315,7 +315,8 @@ public class WordCloudHelper {
             int indexFromChunkName = Integer.parseInt(chunkName.replace("chunk", ""));
             JSONArray keywordsArr= entry.getValue();
             for(int i=0; i<keywordsArr.length(); i++){
-                if(keyword.equals(keywordsArr.get(i).toString())){
+                String keywordFromSentence = keywordsArr.get(i).toString().trim();
+                if(keyword.equals(keywordFromSentence)){
                     indexes.add(indexFromChunkName);
                     break;
                 }
@@ -331,31 +332,74 @@ public class WordCloudHelper {
 
 
     /**
-     * this fxn returns the keywords and values which has values greater than 1 in a single string
+     * this fxn takes keystring and valstr with duplicate values , and retutns combined list without duplicate values
      * @param keywordStr keyword str
-     * @param valStr valu str
+     * @param valStr value str
      * @return
      */
     public String getFilteredKeywordValuesString(String keywordStr, String valStr){
-        String keywordsStr  = "";
-        String valueStr = "";
         String[] keywords = keywordStr.split(",");
         String[] values = valStr.split(",");
-        // iterate over the arrays
-        for(int i=0; i<keywords.length; i++){
-            String keyword = keywords[i];
-            String value = values[i];
-            // if it is last item don't add comma
-                if(i==keywords.length-1){
-                    keywordsStr += keyword;
-                    valueStr += value;
-                }else {
-                    keywordsStr += keyword+",";
-                    valueStr += value+",";
-                }
+        // create a hashmap
+        HashMap<String, Integer> keyMap = new HashMap<>();
+        // populate this with zeros, plain hashmap
+        for(int i=0; i< keywords.length; i++){
+            String keyword = keywords[i].trim();
+            keyMap.put(keyword, 0);
         }
-        String finalRes = keywordsStr+"-:-"+valueStr;
+        // update the values of that keywords
+        for(int i=0; i<keywords.length; i++){
+            String keyword = keywords[i].trim();
+            Integer valueInMap = keyMap.get(keyword);
+            if(isValidLabel(keyword)){
+                keyMap.put(keyword, 5);
+            }else {
+                keyMap.put(keyword, valueInMap+1);
+            }
+        }
+        // convert these values to strings
+        ArrayList<String> newKeywords = new ArrayList<>();
+        ArrayList<String> newValues = new ArrayList<>();
+        // get keywords
+        for(HashMap.Entry<String, Integer> entry: keyMap.entrySet()){
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+            newKeywords.add(key);
+            newValues.add(value.toString());
+        }
+        String newKeywordsStr = "";
+        String newValuesStr = "";
+        for(int i=0; i<newKeywords.size(); i++){
+            // if the value is last don'' add comma
+            if(i==(newKeywords.size()-1)){
+                newKeywordsStr += newKeywords.get(i);
+                newValuesStr += newValues.get(i);
+            }else{
+                newKeywordsStr += newKeywords.get(i)+",";
+                newValuesStr += newValues.get(i)+",";
+            }
+        }
+        String finalRes = newKeywordsStr+"-:-"+newValuesStr;
         return finalRes;
+
+//        String keywordsStr  = "";
+//        String valueStr = "";
+//        String[] keywords = keywordStr.split(",");
+//        String[] values = valStr.split(",");
+//        // iterate over the arrays
+//        for(int i=0; i<keywords.length; i++){
+//            String keyword = keywords[i];
+//            String value = values[i];
+//            // if it is last item don't add comma
+//                if(i==keywords.length-1){
+//                    keywordsStr += keyword;
+//                    valueStr += value;
+//                }else {
+//                    keywordsStr += keyword+",";
+//                    valueStr += value+",";
+//                }
+//        }
+//        String finalRes = keywordsStr+"-:-"+valueStr;
     }
 
     /**

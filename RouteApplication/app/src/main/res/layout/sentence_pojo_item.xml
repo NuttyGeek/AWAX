@@ -19,10 +19,11 @@
 <!--        android:text="Audio File "-->
 <!--        android:layout_height="wrap_content"/>-->
 
-    <Button
+    <ToggleButton
         android:layout_width="match_parent"
-        android:text="Play Audio"
         android:id="@+id/playBtn"
+        android:textOn="STOP"
+        android:textOff="PLAY"
         android:layout_height="wrap_content"/>
 
 

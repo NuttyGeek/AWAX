@@ -95,6 +95,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.fadein,R.anim.fadeout);
         setContentView(R.layout.activity_frame_test);
         //TODO: prefHelp = new SharedPrefHelper(getApplicationContext());
         // init UI
@@ -620,6 +621,22 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         SharedPrefHelper prefHelper = new SharedPrefHelper(this, this.videoName);
         String result = prefHelper.getResult();
         return result;
+    }
+
+    /**
+     * executed when any of the tabs is clicked
+     * @param v view on which user clicked
+     */
+    public void tabClicked(View v){
+        switch(v.getId()){
+            case R.id.semanticsTab: finish();
+            break;
+            case R.id.segmentTab: Log.v("ng_tab", "segment tab is clicked ");
+            break;
+            case R.id.videoTab: finish();
+            break;
+            default: Log.v("ng_tab", "default");
+        }
     }
 
 }

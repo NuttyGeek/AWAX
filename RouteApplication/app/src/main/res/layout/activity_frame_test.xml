@@ -94,8 +94,45 @@
         android:paddingRight="30dp"
         android:id="@+id/overall_button"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tabs"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/tabs"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="match_parent"
+            android:text="Video"
+            android:id="@+id/videoTab"
+            android:background="@color/white"
+            android:layout_weight="1"
+            android:onClick="tabClicked"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:layout_width="match_parent"
+            android:text="Segment"
+            android:layout_weight="1"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:onClick="tabClicked"
+            android:id="@+id/segmentTab"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:text="Semantics"
+            android:background="@color/white"
+            android:id="@+id/semanticsTab"
+            android:onClick="tabClicked"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+
 
     <ImageView
         android:layout_width="150dp"
@@ -105,5 +142,8 @@
         android:elevation="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

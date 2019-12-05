@@ -182,7 +182,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         String command = "-i "+ffile+" -ss "+start+" -to "+last+" -c copy "+opfile;
         Log.d("commamd:",command);
         String[] cmd = command.split(" ");
-
         try {
             fFmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
                 @Override
@@ -192,13 +191,11 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     progress.setMessage("Generating Audio Chunks");
                     progress.show();
                 }
-
                 @Override
                 public void onProgress(String message) {
 //                    progress.setMessage(message);
                     //Log.d("FFMpeg", message);
                 }
-
                 @Override
                 public void onFailure(String message) {
                     // Log.d("FFMpeg",message);
@@ -206,7 +203,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                     Log.d("FAILCHUMK:",message);
                     progress.dismiss();
                 }
-
                 @Override
                 public void onSuccess(String message) {
                     progress.dismiss();
@@ -221,7 +217,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                         Log.d("CHUMKEXP:","Error:",ex);
                     }*/
                 }
-
                 @Override
                 public void onFinish() {
                 }
@@ -230,7 +225,6 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
             Log.d("FFMpeg", "AudioChumk: " , e);
             e.printStackTrace();
         }
-
     }
 
 

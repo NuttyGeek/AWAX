@@ -29,7 +29,7 @@ public class properties
 
     public static String email = "admin@admin.com";
     public static String password = "adminadmin";
-
     public static int fakeIndex = 1;
+    public static String mainAudioFileNameInSavingActivity = "";
 
 }
