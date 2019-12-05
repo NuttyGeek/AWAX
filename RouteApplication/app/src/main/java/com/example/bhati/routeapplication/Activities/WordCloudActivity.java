@@ -38,7 +38,7 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
         Intent i = getIntent();
         String videoName = i.getStringExtra("videoName");
         colorList = i.getStringArrayListExtra("colors");
-        Log.v("nuttygeek_colors", "color_list: "+colorList.toString());
+        Log.v("ng_colors", "color_list: "+colorList.toString());
         keyMap = getKeywordsFromSharedPref(videoName);
         progressBar = findViewById(R.id.progress);
         FlexboxLayout flexboxLayout = (FlexboxLayout) findViewById(R.id.flexbox);
@@ -46,7 +46,7 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
         HashMap<String, JSONArray> map = getKeywordsFromSharedPref(videoName);
         try{
             textViewList = getTextviewListFromHashMap(map);
-            Log.v("nuttygeek_textview_list", textViewList.toString());
+            Log.v("ng_textview_list", textViewList.toString());
 
         }catch(JSONException e){
             e.printStackTrace();
@@ -61,7 +61,7 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
      * @param list list of textviews
      */
     public void addTextViewToFlexbox(FlexboxLayout layout, ArrayList<TextView> list){
-        Log.v("nuttygeek_layout", "list: "+list.toString());
+        Log.v("ng_layout", "list: "+list.toString());
         for(TextView textView: list){
             layout.addView(textView);
         }
@@ -72,7 +72,7 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
      * @param map hashmap
      */
     public ArrayList<TextView> getTextviewListFromHashMap(HashMap<String, JSONArray> map) throws JSONException {
-        Log.v("nuttygeek_list", map.toString());
+        Log.v("ng_list", map.toString());
         ArrayList<TextView> textViewList = new ArrayList<>();
         // get list of keys
         Set keysSet = map.keySet();
@@ -96,19 +96,19 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
         TextView textview = (TextView)view;
         textview.setTextColor(Color.BLACK);
         String keywordText = textview.getText().toString();
-        Log.v("nuttygeek_click", "clicked on: "+keywordText);
+        Log.v("ng_click", "clicked on: "+keywordText);
         // get the audioChunk from keyword name
         try{
             String audioChunkName = getChunkNameFromKeyword(keywordText, keyMap);
             if(audioChunkName!=null){
-                Log.v("nuttygeek_intent", "chunk: "+audioChunkName+ " keyword: "+keywordText);
+                Log.v("ng_intent", "chunk: "+audioChunkName+ " keyword: "+keywordText);
                 Intent i = new Intent();
                 i.putExtra("chunkName", audioChunkName);
                 i.putExtra("keyword", keywordText);
                 setResult(Activity.RESULT_OK, i);
                 finish();
             }else{
-                Log.v("nuttygeek_intent", "audio chunk name is null");
+                Log.v("ng_intent", "audio chunk name is null");
             }
         }catch(JSONException e){
             e.printStackTrace();
@@ -127,18 +127,18 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
         if(objStr!=null){
             try{
                 JSONObject obj = new JSONObject(objStr);
-                Log.v("nuttygeek_json", obj.toString());
+                Log.v("ng_json", obj.toString());
                 JSONArray arr = obj.names();
                 for(int i=0; i<arr.length(); i++){
                      JSONArray tempArray = obj.getJSONArray(arr.get(0).toString());
-                     Log.v("nuttygeek_json_arr", tempArray.toString());
+                     Log.v("ng_json_arr", tempArray.toString());
                      keywordsMap.put("chunk"+i,tempArray);
                 }
             }catch(JSONException e){
                 e.printStackTrace();
             }
         }else{
-            Log.v("nuttygeek_shared", "Shared pref is null");
+            Log.v("ng_shared", "Shared pref is null");
         }
         return keywordsMap;
     }
@@ -193,13 +193,13 @@ public class WordCloudActivity extends AppCompatActivity implements View.OnClick
     public float getRandomSize(){
         int[] sizes = {18,32,64,128};
         double random = Math.random();
-        Log.v("nuttygeek_random", "random: "+random);
+        Log.v("ng_random", "random: "+random);
         float value = (float) random * 10;
         int intVal = (int) value;
-        Log.v("nuttygeek_random", "value: "+value);
+        Log.v("ng_random", "value: "+value);
         int index = intVal % sizes.length;
-        Log.v("nuttygeek_random", "index: "+index);
-        Log.v("nuttygeek_random", "random size: "+sizes[index]);
+        Log.v("ng_random", "index: "+index);
+        Log.v("ng_random", "random size: "+sizes[index]);
         return sizes[index];
     }
 

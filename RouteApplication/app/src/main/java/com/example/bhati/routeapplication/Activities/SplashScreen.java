@@ -54,14 +54,14 @@ public class SplashScreen extends AppCompatActivity {
         auth.signInWithEmailAndPassword(properties.email, properties.password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
-                Log.v("nuttygeek_login", "Email: "+authResult.getUser().getEmail()+" UID: "+authResult.getUser().getUid());
+                Log.v("ng_login", "Email: "+authResult.getUser().getEmail()+" UID: "+authResult.getUser().getUid());
                 Toast.makeText(SplashScreen.this, "UID: "+authResult.getUser().getUid(), Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 e.printStackTrace();
-                Log.v("nuttygeek_login", e.toString());
+                Log.v("ng_login", e.toString());
             }
         });
         //endregion

@@ -309,7 +309,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
         Bundle bundle = getIntent().getBundleExtra("bundle_values");
         String afile = bundle.getString("AUDIOFILE");
-        Log.v("nuttygeek_afile", afile);
+        Log.v("ng_afile", afile);
         filePath = afile;
         properties.mainAudioFileNameInSavingActivity = filePath.replace(".wav", "");
         //region frames button click listener
@@ -344,8 +344,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         colorList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.v("nuttygeek_color_click", "clicked on : "+i);
-                Log.v("nuttygeek_audio_text", "text: "+mainColorTextList.get(i).getText()+ " color: "+mainColorTextList.get(i).getColor());
+                Log.v("ng_color_click", "clicked on : "+i);
+                Log.v("ng_audio_text", "text: "+mainColorTextList.get(i).getText()+ " color: "+mainColorTextList.get(i).getColor());
                 //using custom dialog
                 AudioChunkDialog audioChunkDialog = new AudioChunkDialog(SavingActivity.this);
                 audioChunkDialog.showDialog(mainColorTextList.get(i).getText(), new View.OnClickListener() {
@@ -361,16 +361,16 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        // Log.v("nuttygeek_keywords", keywords.toString());
+                                        // Log.v("ng_keywords", keywords.toString());
                                         // showToast("keywords: "+keywords.toString());
                                         KeywordsDialog keywordsDialog = new KeywordsDialog(SavingActivity.this);
                                         String content  = keywordsDialog.convertListIntoString(keywords);
-                                        Log.v("nuttygeek_content", content);
+                                        Log.v("ng_content", content);
                                         // do not show the dialog
                                         //keywordsDialog.showDialog(content);
                                         String videoName = getVideoNameFromVideoUri(videoUri);
                                         // create arrylist from keywords string
-                                        //Log.v("nuttygeek_saving", "saving keywords: "+videoName+" chunk"+i+" content: "+content);
+                                        //Log.v("ng_saving", "saving keywords: "+videoName+" chunk"+i+" content: "+content);
                                         saveKeywordsInSharedPref(videoName, "chunk"+i, content);
                                         audioChunkDialog.dismiss();
                                     }
@@ -392,7 +392,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 //showDialogWithText(mainColorTextList.get(i).getText());
                 //region calling simulate map click function
                 //        create a static map location for testing, this location will be shown on map on every color click
-                Log.v("nuttygeek", "[Color Clicked]: "+i);
+                Log.v("ng", "[Color Clicked]: "+i);
                 //getting the first point of the respective polyline from properties class
                 LatLng point = properties.firstCoordinatesOfPolylines.get(i);
                 mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
@@ -400,7 +400,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
                             @Override
                             public void onSuccess(double smallestDistance, LatLng latlng, int position) {
-                                Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
+                                Log.v("ng", "[Simulate Map Click]: adding marker");
                                 addMarkerNew(smallestDistance, latlng, position);
                             }
                             @Override
@@ -436,7 +436,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         });
         bundle = getIntent().getBundleExtra("bundle_values");
         videoUri = bundle.getString("uri");
-        Log.v("nuttygeek_vuri", videoUri);
+        Log.v("ng_vuri", videoUri);
         str = bundle.getString("listLatLng");
         str1 = bundle.getString("listOthers");
         Log.d("RECEIVED_STRING", "IS:" + str1);
@@ -655,7 +655,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             // Send data
             try
             {
-                Log.v("nuttygeek_gt", "getting text: "+Config.SPEECH_TO_TEXT_URL+files.substring(0,files.length()-4));
+                Log.v("ng_gt", "getting text: "+Config.SPEECH_TO_TEXT_URL+files.substring(0,files.length()-4));
                 // Defined URL  where to send data
                 URL url = new URL(Config.SPEECH_TO_TEXT_URL+files.substring(0,files.length()-4));
                 // Send POST data request
@@ -902,7 +902,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
     // region uploading chunks
     private void chumkUpload(final String imagePath,final int sizes) {
-        Log.v("nuttygeek_chum", "inside chunk upload function");
+        Log.v("ng_chum", "inside chunk upload function");
         SimpleMultiPartRequest smr = new SimpleMultiPartRequest(Request.Method.POST, Config.FILE_UPLOAD_URL,
                 new Response.Listener<String>() {
                     @Override
@@ -911,7 +911,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         try {
                             JSONObject jObj = new JSONObject(response);
                             String message = jObj.getString("message");
-                            Log.v("nuttygeek_msg", message);
+                            Log.v("ng_msg", message);
                             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                             ct++;
                             if(ct == sizes)
@@ -1067,7 +1067,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     }
 
     private void addMarker(LatLng latLng) {
-        Log.v("nuttygeek_add" , "adding marker on: "+latLng.toString());
+        Log.v("ng_add" , "adding marker on: "+latLng.toString());
         IconFactory iconFactory = IconFactory.getInstance(SavingActivity.this);
         //  Drawable iconDrawable = ContextCompat.getDrawable(SavingActivity.this, R.drawable.marker_red);
         Icon icon = null;
@@ -1639,9 +1639,9 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      * @param i
      */
     public void addMarkerNew(double distance, LatLng point, int i) {
-        Log.v("nuttygeek", "[addMarkerNew]: adding new marker on map");
+        Log.v("ng", "[addMarkerNew]: adding new marker on map");
         if (distance < 50) {
-            Log.v("nuttygeek_checking", point.toString()+ " "+distance+ " "+i);
+            Log.v("ng_checking", point.toString()+ " "+distance+ " "+i);
             // If distance is less than 50 meters, this is your polyline
             marker_start_point.remove();
             is_pollyline_tounched = true;
@@ -1717,7 +1717,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             salt.append(SALTCHARS.charAt(index));
         }
         String saltStr = salt.toString();
-        Log.d("nuttygeek", "[Create Color String]: #"+saltStr);
+        Log.d("ng", "[Create Color String]: #"+saltStr);
         return "#"+saltStr;
     }
 
@@ -1735,9 +1735,9 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         }
         properties.colorstr.put(cdata,cdata);
         properties.colorsdata.add(cdata);
-        Log.d("nuttygeek", "[Create Colors] adding color: "+cdata);
-        Log.v("nuttygeek", "Color String Hashmap: "+properties.colorstr.toString());
-        Log.v("nuttygeek", "ColorsData ArrayList: "+properties.colorsdata.toString());
+        Log.d("ng", "[Create Colors] adding color: "+cdata);
+        Log.v("ng", "Color String Hashmap: "+properties.colorstr.toString());
+        Log.v("ng", "ColorsData ArrayList: "+properties.colorsdata.toString());
     }
     //    endregion
 //    region adding polylines on map
@@ -1764,7 +1764,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     polylineAdded.remove();
                 }
             }, 5000);
-            Log.v("nuttygeek_added", polylineAdded.toString());
+            Log.v("ng_added", polylineAdded.toString());
         }else{
             properties.firstCoordinatesOfPolylines.add(latLngList.get(0));
             // clearing the old polylines
@@ -1775,7 +1775,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     .width(10f)
                     .color(Color.parseColor(properties.colorsdata.get(ct)))
                     .addAll(latLngList));
-            Log.v("nuttygeek_added", polylineAdded.toString());
+            Log.v("ng_added", polylineAdded.toString());
             // trying to remove polyline
 //            new Handler().postDelayed(new Runnable() {
 //                @Override
@@ -1846,7 +1846,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             String text = textList.get(i);
             ColorText colorTextObj = new ColorText(color, text);
             mainColorTextList.add(colorTextObj);
-            Log.v("nuttygeek_cl", mainColorTextList.toString());
+            Log.v("ng_cl", mainColorTextList.toString());
         }
         colorAdapter.notifyDataSetChanged();
 //      showing the menu layout
@@ -1913,10 +1913,10 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         SharedPreferences.Editor editor = sharedPref.edit();
         String readStr = sharedPref.getString(videoName, null);
         JSONObject object;
-        Log.v("nuttygeek_before", "There is no value in Shared Pref when saving "+audioChunkName);
+        Log.v("ng_before", "There is no value in Shared Pref when saving "+audioChunkName);
         if(readStr!=null){
             // there is already something in shared pref
-            Log.v("nuttygeek_before", "Threre is some value present in shared pref already: "+readStr);
+            Log.v("ng_before", "Threre is some value present in shared pref already: "+readStr);
             try{
                 object = new JSONObject(readStr);
             }catch(Exception e){
@@ -1932,13 +1932,13 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.v("nuttygeek_saved", "videoName: "+videoName+ "obj: "+object.toString());
+        Log.v("ng_saved", "videoName: "+videoName+ "obj: "+object.toString());
         editor.putString(videoName, object.toString());
         boolean saved = editor.commit();
         if(saved) {
-            Log.v("nuttygeek_saved", "keywords saved in Shared Pref");
+            Log.v("ng_saved", "keywords saved in Shared Pref");
         }else{
-            Log.v("nuttygeek_saved", "keywords are not saved on Shared Pref");
+            Log.v("ng_saved", "keywords are not saved on Shared Pref");
         }
     }
 
@@ -1963,7 +1963,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     public String getVideoNameFromVideoUri(String uri){
         String videoName = uri.split("/RouteApp/")[1];
         String newStr = videoName.replace(".mp4", "");
-        Log.v("nuttygeek_uri", newStr);
+        Log.v("ng_uri", newStr);
         return newStr;
     }
 
@@ -2020,20 +2020,20 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         // now read the shared and do the stuff
         wordCloudHelper = new WordCloudHelper(SavingActivity.this);
         HashMap<String, JSONArray> hashmap = wordCloudHelper.getKeywordsFromSharedPref(getVideoNameFromVideoUri(videoUri));
-        Log.v("nuttygeek_map", hashmap.toString());
+        Log.v("ng_map", hashmap.toString());
         try{
             // got the keyWordListString
             String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(hashmap);
             String redundantValuesListString = wordCloudHelper.getStringOfImportanceValues(redundantKeywordListString);
-            Log.v("nuttygeek_top", redundantKeywordListString+ " - "+redundantValuesListString);
+            Log.v("ng_top", redundantKeywordListString+ " - "+redundantValuesListString);
 //                        String keywordListString = wordCloudHelper.getTop10Keywords(redundantKeywordListString).replace("\'", "").replace("`", "");
 //                        String valuesListString = wordCloudHelper.getTop10Values(redundantValuesListString).replace("\'", "").replace("`", "");;
-//                        Log.v("nuttygeek_top", keywordListString+ " - "+valuesListString);
+//                        Log.v("ng_top", keywordListString+ " - "+valuesListString);
 
             //TODO: get filtered keywords list
             String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString)
                     .replace("`", "").replace("'", "").replace(".", "").replace("I", "");
-            Log.v("nuttygeek_combined", combinedString);
+            Log.v("ng_combined", combinedString);
             String [] stringParts = combinedString.split("-:-");
             String keywordListString = stringParts[0];
             String valuesListString = stringParts[1];
@@ -2043,18 +2043,18 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 public void onClick(String keyword) {
                     try{
                         ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, hashmap);
-                        Log.v("nuttygeek_ind", indexes.toString());
+                        Log.v("ng_ind", indexes.toString());
                         // get sentences from indexes
                         ArrayList<String> sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
-                        Log.v("nuttygeek_sen", sentences.toString());
+                        Log.v("ng_sen", sentences.toString());
                         ArrayList<String> audioPaths = wordCloudHelper.getAudioPathsFromIndexes(indexes, properties.audioPaths);
-                        Log.v("nuttygeek_aud", audioPaths.toString());
+                        Log.v("ng_aud", audioPaths.toString());
                         BottomSheetDialog dialog = new BottomSheetDialog(SavingActivity.this, keyword, sentences,
                                 audioPaths);
                         dialog.show(getSupportFragmentManager(), "bottom_sheet");
-                        Log.v("nuttygeek_ap", properties.audioPaths.toString());
+                        Log.v("ng_ap", properties.audioPaths.toString());
 
-                        Log.v("nuttygeek_plist", highlightedPolyines.toString());
+                        Log.v("ng_plist", highlightedPolyines.toString());
                         // if there is some value already in highlighted list then
                         // remove the polylines and clear the list first then do the process
 
@@ -2066,11 +2066,11 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                         p.remove();
                                     }
                                     highlightedPolyines.clear();
-                                    Log.v("nuttygeek_plist", "removed values: "+highlightedPolyines.toString());
+                                    Log.v("ng_plist", "removed values: "+highlightedPolyines.toString());
                                 }
                                 // right now I am showing only one polyline highlighted
                                 for(int index: indexes){
-                                    Log.v("nuttygeek_ix", index+"");
+                                    Log.v("ng_ix", index+"");
                                     ArrayList<List<LatLng>> polylines = properties.polylines;
                                     List<LatLng> relatedPolyline = polylines.get(index);
                                     // if the highlight polyline is being drawn for the second time
@@ -2080,7 +2080,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                             .width(20f)
                                             .addAll(relatedPolyline));
                                     highlightedPolyines.add(polyline);
-                                    Log.v("nuttygeek_plist", highlightedPolyines.toString());
+                                    Log.v("ng_plist", highlightedPolyines.toString());
                                 }
                             }
                         });
@@ -2095,12 +2095,12 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
                         // Log.v("ngt_wordcloudlist","point: "+point.toString()+" smallestDistance: "+smallestDistance+" list: "+list.toString()+ " closestLocation: "+closestLocation.toString());
 //                        mapAndVideoSeekHelper = new MapAndVideoSeekHelper();
-//                        Log.v("nuttygeek_click", "simulating map click");
+//                        Log.v("ng_click", "simulating map click");
 //                        mapAndVideoSeekHelper.simulateMapClick(getApplicationContext(), point, smallestDistance, list, closestLocation, new OnMarkerReadyListener() {
 //                            @Override
 //                            public void onSuccess(double smallestDistance, LatLng latlng, int position) {
-//                                Log.v("nuttygeek", "[Simulate Map Click]: adding marker");
-//                                Log.v("nuttygeek_mapmap", "smalestDistance: "+smallestDistance+ " latlng: "+latlng+ " position: "+position);
+//                                Log.v("ng", "[Simulate Map Click]: adding marker");
+//                                Log.v("ng_mapmap", "smalestDistance: "+smallestDistance+ " latlng: "+latlng+ " position: "+position);
 //                                runOnUiThread(new Runnable() {
 //                                    @Override
 //                                    public void run() {
@@ -2110,7 +2110,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //                            }
 //                            @Override
 //                            public void onFailure() {
-//                                Log.v("nuttygeek_mapmap", "map click simulation not successful");
+//                                Log.v("ng_mapmap", "map click simulation not successful");
 //                                Toast.makeText(getApplicationContext(), "Please click on path", Toast.LENGTH_SHORT).show();
 //                            }
 //                        });
@@ -2127,7 +2127,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             }
             webView.setWebViewClient(new WebViewClient(){
                 public void onPageFinished(WebView view, String url){
-                    Log.v("nuttygeek_keywords", keywordListString+ " : "+valuesListString);
+                    Log.v("ng_keywords", keywordListString+ " : "+valuesListString);
                     webView.loadUrl("javascript:handleData('"+keywordListString+"', '"+valuesListString+"')");
                 }
             });
@@ -2183,7 +2183,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
     public void startSpeechToTextProcess(){
         dd = new DBHelper(SavingActivity.this);
         String speech =dd.getSpeechData(filePath);
-        Log.v("nuttygeek", "speech"+speech);
+        Log.v("ng", "speech"+speech);
 //                if result is not already present, we have to upload the file
         if(speech.equals(""))
         {
@@ -2203,7 +2203,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 try {
 //                                      get the individual file path
                     String filePath =  Environment.getExternalStorageDirectory() + "/RouteApp/"+chumkfiles.get(i);
-                    Log.v("nuttygeek_audio_paths", filePath);
+                    Log.v("ng_audio_paths", filePath);
 //                                      upload it to server
                     chumkUpload(filePath,chumkfiles.size());
                 }catch (Exception ex)
@@ -2216,7 +2216,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             // ***************** testing something ************************
             String filter=filePath.substring(0,filePath.length()-4);
             ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,0);
-            Log.v("nuttygeek_fs", "files searched: \n\n"+chumkfiles.toString());
+            Log.v("ng_fs", "files searched: \n\n"+chumkfiles.toString());
             // if the audio paths are empty add the paths to that arraylist
             properties.audioPaths.clear();
             for(int i=0; i<chumkfiles.size(); i++){

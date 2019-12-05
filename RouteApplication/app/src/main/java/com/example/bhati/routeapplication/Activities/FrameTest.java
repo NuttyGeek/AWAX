@@ -134,13 +134,13 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             // hiding loading view
             loadingView.setVisibility(View.GONE);
             // show the graph & other stuff
-            Log.v("nuttygeek_service", "Result is stored in shared pref");
+            Log.v("ng_service", "Result is stored in shared pref");
             // selecting 2 indexes from 10
             // not sure why is it used
             // helper.selectNPointsFromArrayList(10,2);
             // get result from shared pref
             String result = getresultFromSharedPref();
-            Log.v("nuttygeek_fake", result);
+            Log.v("ng_fake", result);
             HashMap<String, Double> map = helper.getAggregateResultFromResultString(result);
             // draw graph from aggregate result
             drawOverAllChart(map);
@@ -151,7 +151,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             if(areFramesUploaded()){
                 // hiding loading view
                 loadingView.setVisibility(View.GONE);
-                Log.v("nuttygeek_service", "Frames are already uploaded, do you work & show the graph");
+                Log.v("ng_service", "Frames are already uploaded, do you work & show the graph");
                 // now we just have to get results from server
                 FrameUploadService.startActionGetResults(getApplicationContext(), Uri.parse(this.videoUri));
             }else{
@@ -160,9 +160,9 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                     loadingView.setVisibility(View.VISIBLE);
                     loadingText.setText("Frames are extracted & are being uploaded to server, please come back later");
                     Toast.makeText(this, "Frames are already extracted !", Toast.LENGTH_SHORT).show();
-                    Log.v("nuttygeek_service", "Frames are already extracted !");
+                    Log.v("ng_service", "Frames are already extracted !");
                     // check if frames are uploaded
-                    Log.v("nuttygeek_service", "Frames are not uploaded ");
+                    Log.v("ng_service", "Frames are not uploaded ");
                     // upload frames
                     // TODO: change this thing
                     FrameUploadService.startActionUploading(getApplicationContext(),Uri.parse(this.videoUri));
@@ -170,16 +170,16 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                     loadingText.setText("Frames are not extracted ");
                     // frames are not extracted nor uploaded, neither got the result from server
                     Toast.makeText(this, "Frames are not extracted from the video ", Toast.LENGTH_SHORT).show();
-                    Log.v("nuttygeek_service", "frames are not extracted yet");
+                    Log.v("ng_service", "frames are not extracted yet");
                 }
             }
         }
         //endregion
 
         mainPolylinePoints = (ArrayList<LatLng>) i.getSerializableExtra("list");
-        Log.v("nuttygeek_poly", "polylines coordinates: "+mainPolylinePoints.toString());
-        Log.v("nuttygeek", videoUri);
-        Log.v("nuttygeek_vid", "Video Name: "+videoName);
+        Log.v("ng_poly", "polylines coordinates: "+mainPolylinePoints.toString());
+        Log.v("ng", videoUri);
+        Log.v("ng_vid", "Video Name: "+videoName);
         answerText.setText("Please wait.. Analyzing the Video !");
 
         chart.setDrawBarShadow(false);
@@ -257,13 +257,13 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
             @Override
             public void getExtractedFrameCount(int count) {
-                Log.v("nuttygeek_count", count+ "th frame extracted !");
+                Log.v("ng_count", count+ "th frame extracted !");
                 incrementProgress();
             }
 
             @Override
             public void getTotalFramesCount(int count) {
-                Log.v("nuttygeek_count", "Total no of frames to be extracted: "+count);
+                Log.v("ng_count", "Total no of frames to be extracted: "+count);
                 setMaxValueForProgressBar(count*2);
             }
         });
@@ -277,7 +277,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 // init the ImageDetectionResult Object
                 if(imageDetectionResult == null){
                     imageDetectionResult = new ImageDetectionResult(videoName);
-                    Log.v("nuttygeek_result", "image Detection result no initialized , intialized it !");
+                    Log.v("ng_result", "image Detection result no initialized , intialized it !");
                 }
                 // hiding the loading view
                 loadingView.setVisibility(View.GONE);
@@ -285,7 +285,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 imageDetectionResult.appendImageLabels(frameName, labels);
                 // increment the progress
                 incrementProgress();
-                Log.v("nuttygeek_od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
+                Log.v("ng_od", "ImageDetection Obj: "+new Gson().toJson(imageDetectionResult));
             }
 
             @Override
@@ -297,11 +297,11 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             public void gotLabelsCompleted(String videoName) {
                 // save the whole object in Shared Pref
                 Toast.makeText(FrameTest.this, "Got All the images processed !", Toast.LENGTH_SHORT).show();
-                Log.v("nuttygeek_completed", "Image Detection Obj after completion: "+new Gson().toJson(imageDetectionResult));
+                Log.v("ng_completed", "Image Detection Obj after completion: "+new Gson().toJson(imageDetectionResult));
                 //TODO: prefHelp.saveObjectDetectionData(videoName, imageDetectionResult);
                 // now try to get the value from Shared Pref
                 //TODO: imageDetectionResult = prefHelp.getObjectDetectionData(videoName);
-                Log.v("nuttygeek_sp", "\nShared Pref: "+new Gson().toJson(imageDetectionResult));
+                Log.v("ng_sp", "\nShared Pref: "+new Gson().toJson(imageDetectionResult));
                 // creating time stamp map
                 helper.createTimestampsFromImageDetectionResult(mainPolylinePoints,imageDetectionResult);
                 // getting coordinates
@@ -312,7 +312,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
 
             @Override
             public void getProcessedFramesCount(int count) {
-                Log.v("nuttygeek_count", count+"th frame processed");
+                Log.v("ng_count", count+"th frame processed");
                 incrementProgress();
             }
         });
@@ -330,7 +330,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
             public void run() {
                 int old = progress.getProgress();
                 progress.setProgress(old+5);
-                Log.v("nuttygeek_count", "Progress: "+old+1);
+                Log.v("ng_count", "Progress: "+old+1);
             }
         });
     }
@@ -343,7 +343,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         progress.setIndeterminate(false);
         progress.setProgress(0);
         progress.setMax(value);
-        Log.v("nuttygeek_count", "Setting Progress Bar Max Value: "+value);
+        Log.v("ng_count", "Setting Progress Bar Max Value: "+value);
     }
 
     @Override
@@ -356,7 +356,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         // if we have the result for image detection draw the markers on the map
         // draw it anyways
         ArrayList<LatLng> framePoints = helper.getCoordinatesList(mainPolylinePoints, getresultFromSharedPref());
-        Log.v("nuttygeek_points", "size: "+framePoints.size());
+        Log.v("ng_points", "size: "+framePoints.size());
         drawMarkersOnMap(framePoints);
     }
 
@@ -418,12 +418,12 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 // show the over all button
                 overAllButton.setVisibility(View.VISIBLE);
                 // get the frame no on click
-                Log.v("nuttygeek_marker", "Position: "+marker.getPosition().toString());
+                Log.v("ng_marker", "Position: "+marker.getPosition().toString());
                 // get frame name from position
                 ArrayList<LatLng> selectedList = helper.getCoordinatesList(mainPolylinePoints, getresultFromSharedPref());
                 // now get frame name from position
                 String frameName = helper.getFrameNameFromLocation(marker.getPosition(), selectedList);
-                Log.v("nuttygeek_framename", "Frame: "+frameName);
+                Log.v("ng_framename", "Frame: "+frameName);
                 // get lableObject from position
                 // hide the overall chart
                 chart.setVisibility(View.GONE);
@@ -432,7 +432,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
                 // now show the image related to this marker
                 String absPath = helper.getAbsolutePathOfImageFromFrameName(frameName.split("\\.(?=[^\\.]+$)")[0]);
                 if(new File(absPath).exists()){
-                    Log.v("nuttygeek_file", "Image named: "+absPath+ " exists !");
+                    Log.v("ng_file", "Image named: "+absPath+ " exists !");
                     frameImage.setImageBitmap(BitmapFactory.decodeFile(absPath));
                     frameImage.setVisibility(View.VISIBLE);
                     ViewCompat.setTranslationZ(frameImage, 5);
@@ -545,7 +545,7 @@ public class FrameTest extends AppCompatActivity implements OnMapReadyCallback {
         ArrayList<String> labelsList = new ArrayList<>();
         ArrayList<Double> valuesList = new ArrayList<>();
 //        for(ImageLabel label: labelList){
-//            Log.v("nuttygeek_single_label", label.getName()+" : "+label.getScore());
+//            Log.v("ng_single_label", label.getName()+" : "+label.getScore());
 //            labels.add(label.getName());
 //            entries.add(new BarEntry(labelList.indexOf(label), label.getScore()));
 //        }
