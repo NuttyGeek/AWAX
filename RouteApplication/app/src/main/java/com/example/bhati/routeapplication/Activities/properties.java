@@ -32,4 +32,6 @@ public class properties
     public static int fakeIndex = 1;
     public static String mainAudioFileNameInSavingActivity = "";
 
+    public static HashMap<String, String> sentenceAudioMap = new HashMap<>();
+
 }

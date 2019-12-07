@@ -110,6 +110,7 @@ public class DBHelper extends SQLiteOpenHelper {
             Log.d("DDEXP","error:",e);
             return  e.getMessage();
         }
+
     }
     public boolean insertSpeechData(String video_name, String speech)
     {

@@ -10,6 +10,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class FileUtils
 {
@@ -22,9 +23,7 @@ public class FileUtils
             if (!fileDir.exists() || !fileDir.isDirectory()) {
                 return null;
             }
-
             String[] files = fileDir.list();
-
             if (files.length == 0) {
                 return null;
             }
@@ -34,14 +33,14 @@ public class FileUtils
                     myData.add(files[i]);
             }
             if (myData.size() == 0)
+            {
                 return null;
-
+            }
             if (sort != 0) {
                 Collections.sort(myData, String.CASE_INSENSITIVE_ORDER);
                 if (sort < 0)
                     Collections.reverse(myData);
             }
-
             return myData;
         }catch (Exception ex)
         {
@@ -108,6 +107,36 @@ public class FileUtils
             } catch (IOException e2) {}
             throw e;
         }
+    }
+
+
+//    /**
+//     * this fxn is used to get the appropriate file from chunk files
+//     * @param index index of file to get
+//     * @param paths paths of all files
+//     * @return
+//     */
+//    public static String getPathAccordingToToIndex(int index, ArrayList<String> paths){
+//        for(String path: paths){
+//            if(path.contains("_"+(index+1)+".wav")){
+//                return path;
+//            }
+//        }
+//        return null;
+//    }
+
+    /**
+     * this fxn converts the server result string to hashmap
+     * @param result result got from server
+     * @return string
+     */
+    public static HashMap<String, String> getHashMapFromServerResult(String result){
+        String[] splitedValues = result.split("@");
+        String sentences = splitedValues[0];
+        String audios = splitedValues[1];
+        Log.v("ngsen", sentences);
+        Log.v("ngaud", audios);
+        return null;
     }
 
 }

@@ -63,6 +63,7 @@ public class SentenceAudioAdapter extends ArrayAdapter<SentenceAudioPOJO> implem
         SentenceAudioPOJO object = pojoList.get(position);
         String sentence = object.getSentence();
         String audioString = object.getAudioFile().getAbsolutePath();
+        Log.v("ng_bottom", "sentence:"+sentence);
         sentenceTextView.setText(sentence);
 //        audioTextView.setText(audioString);
         final ToggleButton playBtn = v.findViewById(R.id.playBtn);
@@ -95,7 +96,7 @@ public class SentenceAudioAdapter extends ArrayAdapter<SentenceAudioPOJO> implem
             public void onClick(View view) {
                 Uri uri = Uri.fromFile(pojoList.get(index).getAudioFile());
                 if(playBtn.isChecked()){
-                    Log.v("ng_log","play the audio");
+                    Log.v("ng_bottom","playing: "+uri);
                     mediaPlayer = MediaPlayer.create(context, uri);
                     mediaPlayer.start();
                 }else{

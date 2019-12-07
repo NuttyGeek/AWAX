@@ -403,6 +403,56 @@ public class WordCloudHelper {
     }
 
     /**
+     * this fxn takes a map and returns the combined string according to the occurance of a keyword
+     * @param hashmap hashmap got from shared pref
+     * @return combined string
+     */
+    public String getCombinedStringFromMap(HashMap<String, JSONArray> hashmap){
+        HashMap<String, Integer> newValues = new HashMap<>();
+        // get keywords list from this hashmap
+        ArrayList<String> keywordsExtracted = new ArrayList<>();
+        for(HashMap.Entry<String, JSONArray> entry: hashmap.entrySet()){
+            JSONArray arr = entry.getValue();
+            for(int i=0; i<arr.length(); i++){
+                try{
+                    String keyword = arr.get(i).toString();
+                    keywordsExtracted.add(keyword.trim());
+                }catch(JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        // now add zeroes to newValue
+        for(String keyword: keywordsExtracted){
+            newValues.put(keyword, 0);
+        }
+        // now add real values
+        for(int i=0; i<keywordsExtracted.size(); i++){
+            String keyword = keywordsExtracted.get(i);
+            Integer oldValue = newValues.get(keyword);
+            if(oldValue!=null){
+                newValues.put(keyword, oldValue+1);
+            }
+            if(isValidLabel(keyword.trim())){
+                // if it a valid label put 5 as size
+                newValues.put(keyword, 5);
+            }
+        }
+        Log.v("ng_km", newValues.toString());
+        // convert the whole map to a single string
+        String keywordStr = "";
+        String valueStr = "";
+        for(HashMap.Entry<String, Integer> entry: newValues.entrySet()){
+            String keyword = entry.getKey();
+            Integer value = entry.getValue();
+            keywordStr += keyword+",";
+            valueStr += value+",";
+        }
+        String finalRes = keywordStr.replaceAll(",$", "")+"-:-"+valueStr.replaceAll(",$", "");
+        return finalRes;
+    }
+
+    /**
      * this fxn returns top 10 keywords and no more than 10 keywords
      * @param keywordStr keywords Str
      * @return list of max 10 keywords
@@ -464,14 +514,24 @@ public class WordCloudHelper {
     }
 
     /**
-     * this fxn returns the audio paths according to the indexes got
-     * @param indexes indexes to select
-     * @return list of audio paths
+     * get the audio path which ever audio path has the index written inside them resturn those audio paths
+     * @param indexes list of indexes
+     * @param paths audio paths
+     * @return
      */
     public ArrayList<String> getAudioPathsFromIndexes(ArrayList<Integer> indexes, ArrayList<String> paths){
         ArrayList<String> resultList = new ArrayList<>();
+//        for(Integer index: indexes){
+//            resultList.add(paths.get(index));
+//        }
         for(Integer index: indexes){
-            resultList.add(paths.get(index));
+            // iterate over indexes
+            // find this index in paths if any of the audio files have index +1 written in them
+            for(String path: paths){
+                if(path.contains((index+1)+".wav")) {
+                    resultList.add(path);
+                }
+            }
         }
         return resultList;
     }

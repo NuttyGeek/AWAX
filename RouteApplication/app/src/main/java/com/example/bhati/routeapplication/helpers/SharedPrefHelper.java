@@ -8,6 +8,9 @@ import com.example.bhati.routeapplication.Pojo.ImageDetectionResult;
 import com.example.bhati.routeapplication.Pojo.ImageLabel;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,8 @@ public class SharedPrefHelper {
     public static String ARE_FRAMES_UPLOADED_KEY = "are_frames_uploaded";
     public static String IS_RESULT_AVAILABLE_KEY = "is_result_available";
     public static String RESULT = "object_detection_result";
+
+    public static String AUDIO_SYNC = "audio_sync_json";
 
 
     // constructor
@@ -113,5 +118,34 @@ public class SharedPrefHelper {
     public String getResult(){
         return getString("result");
     }
+
+
+    /**
+     * this fxn saves the json object in shared pref of that video file
+     * @param object object
+     */
+    public void saveAudioSyncJSONObject(JSONObject object){
+        // convert this object to string and save it in shared pref
+        String objStr = object.toString();
+        saveString(AUDIO_SYNC, objStr);
+        JSONObject res = getAudioSyncJSONObject();
+        Log.v("ng_json_saved", res.toString());
+    }
+
+    /**
+     * this fxn returns the audiosync json object
+     * @return JSOn Object
+     */
+    public JSONObject getAudioSyncJSONObject(){
+        String jsonStr = getString(AUDIO_SYNC);
+        try{
+            JSONObject obj = new JSONObject(jsonStr);
+            return obj;
+        }catch (JSONException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 }

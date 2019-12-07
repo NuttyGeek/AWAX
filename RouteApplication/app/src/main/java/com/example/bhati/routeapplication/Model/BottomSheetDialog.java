@@ -10,16 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.example.bhati.routeapplication.Adapter.SentenceAudioAdapter;
 import com.example.bhati.routeapplication.Interface.OnAudioCompletedListener;
 import com.example.bhati.routeapplication.Pojo.SentenceAudioPOJO;
 import com.example.bhati.routeapplication.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
 import java.io.File;
 import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -35,7 +32,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
 
     public BottomSheetDialog(Context context, String word, ArrayList<String> sentences, ArrayList<String> audioPaths){
 
-        Log.v("nuttygeek_bottom", "word: "+word+ "\nsentences: "+sentences.toString()+ "\naudioPaths: "+audioPaths.toString());
+        Log.v("ng_bottom", "word: "+word+ "\nsentences: "+sentences.toString()+ "\naudioPaths: "+audioPaths.toString());
         this.word = word;
         this.context = context;
         // convert sentences string into arraylist

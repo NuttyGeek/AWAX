@@ -70,6 +70,7 @@ import com.example.bhati.routeapplication.MyAppl;
 import com.example.bhati.routeapplication.R;
 import com.example.bhati.routeapplication.directionhelpers.TaskLoadedCallback;
 import com.example.bhati.routeapplication.helpers.AudioChunkDialog;
+import com.example.bhati.routeapplication.helpers.AudioSyncHelper;
 import com.example.bhati.routeapplication.helpers.FramesHelper;
 import com.example.bhati.routeapplication.helpers.KeywordsDialog;
 import com.example.bhati.routeapplication.helpers.KeywordsHelper;
@@ -669,8 +670,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 // Read Server Response
-                while((line = reader.readLine()) != null)
-                {
+                while((line = reader.readLine()) != null) {
                     // Append server response in string
                     sb.append(line + "\n");
                 }
@@ -680,17 +680,17 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             {
                 Log.d("STSEXP:","e",ex);
             }
-            finally
-            {
+            finally {
                 try {
                     reader.close();
                 }
                 catch(Exception ex) {}
             }
             // Show response on activity
+            Log.v("ng_text", "text: "+text);
+            // ":first time:@chunk_1575640065466_2.wav:chunk_1575640065466_1.wav:"
             return text;
-        }catch(Exception ex)
-        {
+        }catch(Exception ex) {
             return  "exp:"+ex.getMessage();
         }
     }
@@ -840,22 +840,26 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 
         @Override
         protected void onPostExecute(String result) {
+            Log.v("ng_pe", result);
+            // TODO: start here
+            AudioSyncHelper audioSyncHelper = new AudioSyncHelper(SavingActivity.this, getVideoNameFromVideoUri(videoUri));
+            // saving result in shared pref
+            audioSyncHelper.saveResultInSharedPref(result);
             pdialog.dismiss();
             Toast.makeText(SavingActivity.this, ""+result, Toast.LENGTH_SHORT).show();
             Log.d("UPLOADERROR:",result);
             saveToFile(result,filePath);
             dd = new DBHelper(SavingActivity.this);
-            if(result.contains("@"))
-            {
+            if(result.contains("@")) {
                 dd.insertSpeechData(filePath,result);
-                try
-                {
+                try {
                     String[] separatedata = result.split("@");
                     listChumktext = new ArrayList<String>();
                     listChumktime = new ArrayList<String>();
                     separatedata[0]=separatedata[0].toString().substring(0,separatedata[0].toString().length()-1);
                     separatedata[1]=separatedata[1].toString().substring(1,separatedata[1].toString().length()-1);
                     String[] textdata=separatedata[0].split(":");
+                    Log.v("ng_text", textdata.toString());
                     String[] chumkdata=separatedata[1].split(":");
                     if(textdata.length>0 && chumkdata.length>0)
                     {
@@ -863,8 +867,9 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                         {
                             String temp = chumkdata[i];
                             String[] tempdata=temp.split("_");
-                            String chumk=tempdata[1]+"_chunk_"+tempdata[4];
+                            String chumk = tempdata[1]+"_chunk_"+tempdata[4];
                             //String chumk=tempdata[1]+"_"+tempdata[2]+"-to-"+tempdata[3]+"_chunk no:"+tempdata[4];
+                            Log.v("ng_chumkli",  i+" : "+chumk);
                             listChumktext.add(textdata[i]);
                             listChumktime.add(chumk);
                         }
@@ -873,10 +878,8 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     //ShowAlertDialogList();
                     showColorList(null, null);
                     //ShowAlertDialogWithListview();
-
-                }catch (Exception ex)
-                {
-                    Log.d("STSEXP:","after text",ex);
+                }catch (Exception ex) {
+                    Log.v("STSEXP:","after text",ex);
                 }
             }else
             {
@@ -929,7 +932,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("verr", error.getMessage());
-
                 Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
@@ -1758,12 +1760,13 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     //.color(Color.parseColor(properties.colorsdata.get(ct)))
                     .color(Color.BLACK)
                     .addAll(latLngList));
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    polylineAdded.remove();
-                }
-            }, 5000);
+            //TODO: why was it here
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    polylineAdded.remove();
+//                }
+//            }, 5000);
             Log.v("ng_added", polylineAdded.toString());
         }else{
             properties.firstCoordinatesOfPolylines.add(latLngList.get(0));
@@ -1841,6 +1844,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
 //        get list of texts
         colorStrList = properties.colorsdata;
         ArrayList<String> textList = listChumktext;
+        Log.v("ng_scl", colorStrList.toString()+ " - "+textList.toString());
         for (int i=0; i<textList.size(); i++){
             String color = colorStrList.get(i);
             String text = textList.get(i);
@@ -1851,14 +1855,13 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         colorAdapter.notifyDataSetChanged();
 //      showing the menu layout
         menuLayout.setVisibility(View.VISIBLE);
-
     }
+
     //        make adapter for color list
     //    region custom adapter for color list
     class ColorAdapter extends BaseAdapter  {
         Context context;
         ArrayList<ColorText> colorTextList;
-
         public ColorAdapter(Context context, ArrayList<ColorText> colorTextList){
             this.context = context;
             this.colorTextList = colorTextList;
@@ -2023,15 +2026,16 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         Log.v("ng_map", hashmap.toString());
         try{
             // got the keyWordListString
-            String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(hashmap);
-            String redundantValuesListString = wordCloudHelper.getStringOfImportanceValues(redundantKeywordListString);
-            Log.v("ng_top", redundantKeywordListString+ " - "+redundantValuesListString);
+//            String redundantKeywordListString = wordCloudHelper.getStringOfKeywords(hashmap);
+//            String redundantValuesListString = wordCloudHelper.getStringOfImportanceValues(redundantKeywordListString);
+//            Log.v("ng_top", redundantKeywordListString+ " - "+redundantValuesListString);
 //                        String keywordListString = wordCloudHelper.getTop10Keywords(redundantKeywordListString).replace("\'", "").replace("`", "");
 //                        String valuesListString = wordCloudHelper.getTop10Values(redundantValuesListString).replace("\'", "").replace("`", "");;
 //                        Log.v("ng_top", keywordListString+ " - "+valuesListString);
 
-            //TODO: get filtered keywords list
-            String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString)
+//            String combinedString = wordCloudHelper.getFilteredKeywordValuesString(redundantKeywordListString, redundantValuesListString)
+//                    .replace("`", "").replace("'", "").replace(".", "").replace("I", "");
+            String combinedString = wordCloudHelper.getCombinedStringFromMap(hashmap)
                     .replace("`", "").replace("'", "").replace(".", "").replace("I", "");
             Log.v("ng_combined", combinedString);
             String [] stringParts = combinedString.split("-:-");
@@ -2042,13 +2046,20 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                 @Override
                 public void onClick(String keyword) {
                     try{
+                        // first of all get sentences
+                        AudioSyncHelper audioSync = new AudioSyncHelper(SavingActivity.this, getVideoNameFromVideoUri(videoUri));
+                        ArrayList<String> sentences = audioSync.getSentencesFromKeyword(keyword);
+                        // now get the new audio list
+                        ArrayList<String> audioPaths = audioSync.getAudioPathsFromSentences(sentences);
                         ArrayList<Integer> indexes = wordCloudHelper.getAudioChunkIndexFromKeyword(keyword, hashmap);
                         Log.v("ng_ind", indexes.toString());
                         // get sentences from indexes
-                        ArrayList<String> sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
-                        Log.v("ng_sen", sentences.toString());
-                        ArrayList<String> audioPaths = wordCloudHelper.getAudioPathsFromIndexes(indexes, properties.audioPaths);
-                        Log.v("ng_aud", audioPaths.toString());
+//                        ArrayList<String> sentences = wordCloudHelper.getSentencesFromIndexes(indexes, mainColorTextList);
+//                        Log.v("ng_sen", sentences.toString());
+                        // till here everything is right , we are getting right sentences
+                        // get correct audio paths
+//                        ArrayList<String> audioPaths = wordCloudHelper.getAudioPathsFromIndexes(indexes, properties.audioPaths);
+//                        Log.v("ng_aud", audioPaths.toString());
                         BottomSheetDialog dialog = new BottomSheetDialog(SavingActivity.this, keyword, sentences,
                                 audioPaths);
                         dialog.show(getSupportFragmentManager(), "bottom_sheet");
@@ -2068,7 +2079,6 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                                     highlightedPolyines.clear();
                                     Log.v("ng_plist", "removed values: "+highlightedPolyines.toString());
                                 }
-                                // right now I am showing only one polyline highlighted
                                 for(int index: indexes){
                                     Log.v("ng_ix", index+"");
                                     ArrayList<List<LatLng>> polylines = properties.polylines;
@@ -2131,7 +2141,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     webView.loadUrl("javascript:handleData('"+keywordListString+"', '"+valuesListString+"')");
                 }
             });
-        }catch (JSONException e){
+        }catch (Exception e){
             Log.v("ngt_error", "error: "+e.getMessage());
             e.printStackTrace();
         }
@@ -2182,7 +2192,7 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
      */
     public void startSpeechToTextProcess(){
         dd = new DBHelper(SavingActivity.this);
-        String speech =dd.getSpeechData(filePath);
+        String speech =dd.getSpeechData(filePath).replace("\"", "").replaceAll(":$", "");
         Log.v("ng", "speech"+speech);
 //                if result is not already present, we have to upload the file
         if(speech.equals(""))
@@ -2192,11 +2202,12 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
             ct = 0;
             String filter=filePath.substring(0,filePath.length()-4);
             ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
-            properties.audioPaths.clear();
-            for(int i=0; i<chumkfiles.size(); i++){
-                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
-                properties.audioPaths.add(chumkfiles.get(i));
-            }
+//            properties.audioPaths.clear();
+//            for(int i=0; i<chumkfiles.size(); i++){
+//                // add according to i
+//                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+//                properties.audioPaths.add(chumkfiles.get(i));
+//            }
 //                              for every audio chunk file do this
             for(int i = 0;i<chumkfiles.size();i++)
             {
@@ -2215,14 +2226,14 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
         }else if(speech.contains("@")) {
             // ***************** testing something ************************
             String filter=filePath.substring(0,filePath.length()-4);
-            ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,0);
+            ArrayList<String> chumkfiles = FileUtils.getFileNames(Environment.getExternalStorageDirectory() + "/RouteApp","chunk_"+filter,1);
             Log.v("ng_fs", "files searched: \n\n"+chumkfiles.toString());
             // if the audio paths are empty add the paths to that arraylist
-            properties.audioPaths.clear();
-            for(int i=0; i<chumkfiles.size(); i++){
-                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
-                properties.audioPaths.add(chumkfiles.get(i));
-            }
+//            properties.audioPaths.clear();
+//            for(int i=0; i<chumkfiles.size(); i++){
+//                Log.v("ng_audio_path", "path "+i+" : "+chumkfiles.get(i));
+//                properties.audioPaths.add(chumkfiles.get(i));
+//            }
 
             // *****************  end of testing **************************
             Toast.makeText(SavingActivity.this, "speech contains @ ", Toast.LENGTH_LONG).show();
@@ -2241,19 +2252,18 @@ public class SavingActivity extends AppCompatActivity implements OnMapReadyCallb
                     {
                         String temp = chumkdata[i];
                         String[] tempdata=temp.split("_");
-                        String chumk=tempdata[1]+"_chunk_"+tempdata[4];
+                        String chumk=tempdata[1]+"_chunk_"+tempdata[2];
                         //String chumk=tempdata[1]+"_"+tempdata[2]+"-to-"+tempdata[3]+"_chunk no:"+tempdata[4];
 //                                  getting actual data
                         listChumktext.add(textdata[i]);
                         listChumktime.add(chumk);
                     }
                 }
-//                          testing
+//              testing
                 showColorList(null, null);
-                //ShowAlertDialogList();
-                //ShowAlertDialogWithListview();
-//                           endregion
-
+                // ShowAlertDialogList();
+                // ShowAlertDialogWithListview();
+//              endregion
             }catch (Exception ex)
             {
                 Log.d("STSEXP:","after text",ex);

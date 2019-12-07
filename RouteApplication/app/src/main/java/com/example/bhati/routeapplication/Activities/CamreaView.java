@@ -175,7 +175,8 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
         String lt = last.split(":")[2];
         Log.d("audiofileloc:",audio.getName());
         String ffile = folder+"/"+audio.getName();
-        String opfile=folder+"/chunk_"+audio.getName().substring(0,audio.getName().length()-4)+"_"+st+"_"+lt+"_"+ct+".wav";
+        String opfile=folder+"/chunk_"+audio.getName().substring(0,audio.getName().length()-4)+"_"+ct+".wav";
+        // String opfile=folder+"/chunk_"+audio.getName().substring(0,audio.getName().length()-4)+"_"+ct+".wav";
         Log.d("commamd:",opfile);
         //String opfile=start+"_"+last+"_chumk.mp3";
         //String command = "-i "+audio+" -acodec copy -ss "+st+" -to "+lt+" "+folder+"/"+st+"_"+lt+"_chumk.wav";
@@ -193,8 +194,8 @@ public class CamreaView extends AppCompatActivity  implements SurfaceHolder.Call
                 }
                 @Override
                 public void onProgress(String message) {
-//                    progress.setMessage(message);
-                    //Log.d("FFMpeg", message);
+                    //  progress.setMessage(message);
+                    //  Log.d("FFMpeg", message);
                 }
                 @Override
                 public void onFailure(String message) {
